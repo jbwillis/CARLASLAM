@@ -22,10 +22,24 @@ except IndexError:
     pass
 
 import carla
+from custom_basic_agent import BasicAgent
 
 import random
 import time
 
+
+LOC_neighborhood_culdesac = [62, 60, 0]
+LOC_town_center = [30, -3, 0]
+LOC_highway_neighborhood_edge = [240, 130, 0] 
+LOC_center_roundabout_north = [20, 0, 0]
+LOC_center_roundabout_south = [-20, 0, 0]
+
+
+ROUTE_neighborhood_highway = [LOC_highway_neighborhood_edge, LOC_neighborhood_culdesac, LOC_highway_neighborhood_edge, LOC_neighborhood_culdesac]
+ROUTE_neighborhood_town_center = [LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center]
+
+ROUTE_short = [LOC_center_roundabout_north, LOC_center_roundabout_south, LOC_center_roundabout_north]
+ROUTE = ROUTE_short
 
 def main():
     actor_list = []
@@ -50,14 +64,15 @@ def main():
 
         # get the map of the world and the waypoint for the starting location
         world_map = world.get_map()
-        starting_wpt = world_map.get_waypoint(carla.Location(x=30, y=-8, z=0))
+        starting_loc = ROUTE[0]
+        starting_wpt = world_map.get_waypoint(carla.Location(x=starting_loc[0], y=starting_loc[1], z=starting_loc[2]))
 
         # spawn the vehicle at the chosen waypoint and add it to the actor list
         vehicle = world.spawn_actor(bp, starting_wpt.transform)
         actor_list.append(vehicle)
         print('created %s' % vehicle.type_id)
 
-        vehicle.set_autopilot(True)
+        # vehicle.set_autopilot(True)
 
         # move simulation view to center on vehicle, up high
         world.tick()
@@ -65,10 +80,27 @@ def main():
         world_snapshot = world.wait_for_tick()
         actor_snapshot = world_snapshot.find(vehicle.id)
         spectator_transform = actor_snapshot.get_transform()
-        spectator_transform.location += carla.Location(x=0.0, y=0.0, z=100.0) 
+        spectator_transform.location += carla.Location(x=0, y=0, z=100.0) 
+        spectator_transform.rotation.pitch = -89
+        spectator_transform.rotation.yaw = -179 
+        spectator_transform.rotation.roll = -1 
         spectator.set_transform(spectator_transform)
 
-        time.sleep(15)
+        # create a basic agent of the vehicle
+        agent = BasicAgent(vehicle, target_speed =40)
+        agent.set_destination_list(ROUTE)
+
+
+        # drive to waypoints until they are all gone
+        while len(agent._local_planner._waypoints_queue) > 0:
+            world.wait_for_tick(10.0)
+
+            control = agent.run_step()
+            control.manual_gear_shift = False
+            vehicle.apply_control(control)
+
+        print('Finished following waypoints')
+
 
     finally:
 
