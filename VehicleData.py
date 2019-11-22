@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # custom class for keeping track of a vehicle's data
 
 # import glob
@@ -54,13 +55,16 @@ class VehicleData:
         self.throttle_data.append(throttle)
 
     def _appendSteerData(self, steer):
-        # steer is a single float in [-1, 1]
+        # steer is a single float in [-1, 1], make it an angle by
+        # multiplying by the max steer angle
+        steer = steer*self.max_steer_angle
         self.steer_data.append(steer)
 
     def plot(self):
         pw = plotWindow()
 
-        pw.addPlot("Position Map", self._plotPosition2D())
+        pw.addPlot("Map", self._plotPosition2D())
+        pw.addPlot("Positions", self._plotPositionSubplots())
         pw.addPlot("Velocities", self._plotVelocity())
         pw.addPlot("Controls", self._plotControl())
 
@@ -85,6 +89,25 @@ class VehicleData:
 
         return f
 
+    def _plotPositionSubplots(self):
+        # create 3 subplots of the position, returning a figure object
+        pos_np = np.array(self.position_truth)
+
+        f = plt.figure()
+        spx = f.add_subplot(3,1,1)
+        spx.plot(pos_np[:,0]);
+        spx.legend("x")
+
+        spy = f.add_subplot(3,1,2)
+        spy.plot(pos_np[:,1]);
+        spy.legend("y")
+
+        spz = f.add_subplot(3,1,3)
+        spz.plot(pos_np[:,2]);
+        spz.legend("z")
+
+        return f
+
     def _plotPosition2D(self):
         # creates a 2D map of the position, returning a figure object
         pos_np = np.array(self.position_truth)
@@ -94,6 +117,9 @@ class VehicleData:
         sp.plot(pos_np[:,0], pos_np[:,1])
 
         sp.set_aspect('equal', 'box')
+        # flip x axis to align with CARLA coordinate frame
+        xl = sp.get_xlim()
+        sp.set_xlim(xl[::-1])
 
         return f
 
@@ -103,7 +129,7 @@ class VehicleData:
         throt_np     = np.array(self.throttle_data)
 
         # convert the steering commands into angles
-        steer_ang_np = self.max_steer_angle*np.array(self.steer_data)
+        steer_ang_np = np.array(self.steer_data)
 
         f = plt.figure()
         spt = f.add_subplot(2,1,1)
