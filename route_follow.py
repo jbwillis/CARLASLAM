@@ -111,6 +111,10 @@ def main():
             vd.appendControlData(control)
             vd.appendPositionTruth(vehicle.get_location())
 
+        control.brake = 1.0
+        control.throttle = 0.0
+        vehicle.apply_control(control)
+
         print('Finished following waypoints')
 
 
