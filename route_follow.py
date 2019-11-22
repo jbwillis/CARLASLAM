@@ -27,6 +27,7 @@ from custom_basic_agent import BasicAgent
 import random
 import time
 
+from VehicleData import VehicleData
 
 LOC_neighborhood_culdesac = [62, 60, 0]
 LOC_town_center = [30, -3, 0]
@@ -90,6 +91,8 @@ def main():
         agent = BasicAgent(vehicle, target_speed =40)
         agent.set_destination_list(ROUTE)
 
+        # keep track of Vehicle State information
+        vd = VehicleData()
 
         # drive to waypoints until they are all gone
         while len(agent._local_planner._waypoints_queue) > 0:
@@ -98,6 +101,10 @@ def main():
             control = agent.run_step()
             control.manual_gear_shift = False
             vehicle.apply_control(control)
+
+            vd.appendVelocityData(vehicle.get_velocity())
+            vd.appendControlData(control)
+            vd.appendPositionTruth(vehicle.get_location())
 
         print('Finished following waypoints')
 
