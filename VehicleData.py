@@ -153,27 +153,29 @@ class VehicleData:
     def saveToFile(self, filename):
 
         # create numpy arrays of everything
+        t_np         = np.array(self.time_vec)
         vd_np        = np.array(self.velocity_data)
         pos_np       = np.array(self.position_truth)
         throt_np     = np.array(self.throttle_data)
         steer_ang_np = np.array(self.steer_data)
 
         # concatenate the arrays into one big array
-        all_data = np.column_stack([vd_np, pos_np, throt_np, steer_ang_np])
+        all_data = np.column_stack([t_np, vd_np, pos_np, throt_np, steer_ang_np])
 
         # save it
         np.savetxt(filename, all_data, delimiter=', ', 
-                header='x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, throttle, steering angle')
+                header='time, x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, throttle, steering angle')
 
     def loadFromFile(self, filename):
         # load from file
         all_data = np.loadtxt(filename, delimiter=', ')
 
         # extract arrays
-        self.velocity_data  = all_data[:,0:3]
-        self.position_truth = all_data[:,3:6]
-        self.throttle_data  = all_data[:,6:7]
-        self.steer_data     = all_data[:,7:8]
+        self.time_vec       = all_data[:,0:1]
+        self.velocity_data  = all_data[:,1:4]
+        self.position_truth = all_data[:,4:7]
+        self.throttle_data  = all_data[:,7:8]
+        self.steer_data     = all_data[:,8:9]
         
 
 if __name__ == '__main__':
