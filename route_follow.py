@@ -93,7 +93,8 @@ def main():
         world.set_weather(carla.WeatherParameters(cloudyness=20.0, sun_azimuth_angle=90, sun_altitude_angle=90))
 
         settings = world.get_settings()
-        settings.fixed_delta_seconds = 0.01
+        settings.synchronous_mode = True
+        settings.fixed_delta_seconds = 0.05
         world.apply_settings(settings)
 
         spectator = world.get_spectator() # the spectator is the view of the simulator window
@@ -124,7 +125,7 @@ def main():
         # move simulation view to center on vehicle, up high
         world.tick()
 
-        world_snapshot = world.wait_for_tick()
+        world_snapshot = world.get_snapshot()
         actor_snapshot = world_snapshot.find(vehicle.id)
         spectator_transform = actor_snapshot.get_transform()
         spectator_transform.location += carla.Location(x=0, y=0, z=100.0) 
@@ -149,11 +150,15 @@ def main():
         while len(agent._local_planner._waypoints_queue) > 0:
         # for i in range(150):
             # print(i)
-            world.wait_for_tick(10.00)
+            # world.wait_for_tick(10.00)
+            world.tick()
+            snapshot = world.get_snapshot()
+            time = snapshot.elapsed_seconds
 
             control = agent.run_step()
             control.manual_gear_shift = False
             vehicle.apply_control(control)
+            vd.appendTime(time)
             vd.appendVelocityData(vehicle.get_velocity())
             vd.appendControlData(control)
             vd.appendPositionTruth(vehicle.get_location())
