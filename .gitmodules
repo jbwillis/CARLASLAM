@@ -1,0 +1,3 @@
+[submodule "plotWindow"]
+	path = plotWindow
+	url = git@github.com:jbwillis/plotWindow.git
