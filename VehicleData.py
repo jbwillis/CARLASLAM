@@ -23,11 +23,15 @@ class VehicleData:
     def __init__(self, max_steer_angle=70.0):
         self.max_steer_angle = max_steer_angle
 
+        self.time_vec       = [] 
         self.position_zero  = None
         self.position_truth = []
         self.velocity_data  = []
         self.throttle_data  = []
         self.steer_data     = []
+
+    def appendTime(self, t):
+        self.time_vec.append(t)
 
     def appendVelocityData(self, vel):
         # vel is a carla.Vector3D object
@@ -72,38 +76,40 @@ class VehicleData:
 
     def _plotVelocity(self):
         # creates and returns a matplotlib figure object
+        t     = np.array(self.time_vec)
         vd_np = np.array(self.velocity_data)
 
         f = plt.figure()
         spx = f.add_subplot(3,1,1)
-        spx.plot(vd_np[:,0]);
+        spx.plot(t, vd_np[:,0]);
         spx.legend("x")
 
         spy = f.add_subplot(3,1,2)
-        spy.plot(vd_np[:,1]);
+        spy.plot(t, vd_np[:,1]);
         spy.legend("y")
 
         spz = f.add_subplot(3,1,3)
-        spz.plot(vd_np[:,2]);
+        spz.plot(t, vd_np[:,2]);
         spz.legend("z")
 
         return f
 
     def _plotPositionSubplots(self):
         # create 3 subplots of the position, returning a figure object
+        t      = np.array(self.time_vec)
         pos_np = np.array(self.position_truth)
 
         f = plt.figure()
         spx = f.add_subplot(3,1,1)
-        spx.plot(pos_np[:,0]);
+        spx.plot(t, pos_np[:,0]);
         spx.legend("x")
 
         spy = f.add_subplot(3,1,2)
-        spy.plot(pos_np[:,1]);
+        spy.plot(t, pos_np[:,1]);
         spy.legend("y")
 
         spz = f.add_subplot(3,1,3)
-        spz.plot(pos_np[:,2]);
+        spz.plot(t, pos_np[:,2]);
         spz.legend("z")
 
         return f
@@ -126,19 +132,20 @@ class VehicleData:
     def _plotControl(self):
         # plot the throttle and steering commands
 
-        throt_np     = np.array(self.throttle_data)
+        t        = np.array(self.time_vec)
+        throt_np = np.array(self.throttle_data)
 
         # convert the steering commands into angles
         steer_ang_np = np.array(self.steer_data)
 
         f = plt.figure()
         spt = f.add_subplot(2,1,1)
-        spt.plot(throt_np)
+        spt.plot(t, throt_np)
         spt.legend("Throttle")
 
         sps = f.add_subplot(2,1,2)
-        sps.plot(steer_ang_np)
-        sps.set_ylabel('degrees')
+        sps.plot(t, steer_ang_np)
+        sps.set_ylabel("degrees")
         sps.legend("Steering Angle")
 
         return f
