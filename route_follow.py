@@ -87,6 +87,11 @@ def main():
         spectator_transform.rotation.roll = -1 
         spectator.set_transform(spectator_transform)
 
+        pc = vehicle.get_physics_control();
+        # get rid of the steering curve
+        pc.steering_curve = [carla.Vector2D(0.0, 1.0), carla.Vector2D(120.0, 1.0)];
+        vehicle.apply_physics_control(pc)
+
         # create a basic agent of the vehicle
         agent = BasicAgent(vehicle, target_speed =40)
         agent.set_destination_list(ROUTE)
