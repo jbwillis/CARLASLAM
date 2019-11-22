@@ -143,4 +143,38 @@ class VehicleData:
 
         return f
 
+    def saveToFile(self, filename):
 
+        # create numpy arrays of everything
+        vd_np        = np.array(self.velocity_data)
+        pos_np       = np.array(self.position_truth)
+        throt_np     = np.array(self.throttle_data)
+        steer_ang_np = np.array(self.steer_data)
+
+        # concatenate the arrays into one big array
+        all_data = np.column_stack([vd_np, pos_np, throt_np, steer_ang_np])
+
+        # save it
+        np.savetxt(filename, all_data, delimiter=', ', 
+                header='x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, throttle, steering angle')
+
+    def loadFromFile(self, filename):
+        # load from file
+        all_data = np.loadtxt(filename, delimiter=', ')
+
+        # extract arrays
+        self.velocity_data  = all_data[:,0:3]
+        self.position_truth = all_data[:,3:6]
+        self.throttle_data  = all_data[:,6:7]
+        self.steer_data     = all_data[:,7:8]
+        
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) > 1:
+        fname = sys.argv[1]
+        vd = VehicleData()
+        vd.loadFromFile(fname)
+        vd.plot()
+    else:
+        print('Please specify a filename')
