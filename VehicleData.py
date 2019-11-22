@@ -15,10 +15,14 @@
 import numpy as np
 from utils import *
 
+from plotWindow.plotWindow import plotWindow
+import matplotlib.pyplot as plt
+
 class VehicleData:
     def __init__(self, max_steer_angle=70.0):
         self.max_steer_angle = max_steer_angle
 
+        self.position_zero  = None
         self.position_truth = []
         self.velocity_data  = []
         self.throttle_data  = []
@@ -52,3 +56,65 @@ class VehicleData:
     def _appendSteerData(self, steer):
         # steer is a single float in [-1, 1]
         self.steer_data.append(steer)
+
+    def plot(self):
+        pw = plotWindow()
+
+        pw.addPlot("Position Map", self._plotPosition2D())
+        pw.addPlot("Velocities", self._plotVelocity())
+        pw.addPlot("Controls", self._plotControl())
+
+        pw.show()
+
+    def _plotVelocity(self):
+        # creates and returns a matplotlib figure object
+        vd_np = np.array(self.velocity_data)
+
+        f = plt.figure()
+        spx = f.add_subplot(3,1,1)
+        spx.plot(vd_np[:,0]);
+        spx.legend("x")
+
+        spy = f.add_subplot(3,1,2)
+        spy.plot(vd_np[:,1]);
+        spy.legend("y")
+
+        spz = f.add_subplot(3,1,3)
+        spz.plot(vd_np[:,2]);
+        spz.legend("z")
+
+        return f
+
+    def _plotPosition2D(self):
+        # creates a 2D map of the position, returning a figure object
+        pos_np = np.array(self.position_truth)
+
+        f = plt.figure()
+        sp = f.add_subplot(1,1,1)
+        sp.plot(pos_np[:,0], pos_np[:,1])
+
+        sp.set_aspect('equal', 'box')
+
+        return f
+
+    def _plotControl(self):
+        # plot the throttle and steering commands
+
+        throt_np     = np.array(self.throttle_data)
+
+        # convert the steering commands into angles
+        steer_ang_np = self.max_steer_angle*np.array(self.steer_data)
+
+        f = plt.figure()
+        spt = f.add_subplot(2,1,1)
+        spt.plot(throt_np)
+        spt.legend("Throttle")
+
+        sps = f.add_subplot(2,1,2)
+        sps.plot(steer_ang_np)
+        sps.set_ylabel('degrees')
+        sps.legend("Steering Angle")
+
+        return f
+
+
