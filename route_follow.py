@@ -30,6 +30,20 @@ import pdb
 import time
 import numpy as np
 
+from VehicleData import VehicleData
+
+# set up an argument parser
+import argparse
+parser = argparse.ArgumentParser(description='Follow a route in the CARLA simulation')
+
+parser.add_argument('-p', '--plot', help='plot the vehicle data', action='store_true')
+parser.add_argument('-vd', '--vehicle_data_file', 
+        help='The filename to save VehicleData to')
+parser.add_argument('-r', '--route', 
+        help='The route # to use. 1 = Roundabout, 2 = Neighborhood and Town Center, 3 = Highway and Neighborhood. Default 1', default=1, type=int)
+
+args = parser.parse_args()
+
 LOC_neighborhood_culdesac = [62, 60, 0]
 LOC_town_center = [30, -3, 0]
 LOC_highway_neighborhood_edge = [240, 130, 0] 
@@ -41,7 +55,8 @@ ROUTE_neighborhood_highway = [LOC_highway_neighborhood_edge, LOC_neighborhood_cu
 ROUTE_neighborhood_town_center = [LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center]
 
 ROUTE_short = [LOC_center_roundabout_north, LOC_center_roundabout_south, LOC_center_roundabout_north]
-ROUTE = ROUTE_short
+routes = [ROUTE_short, ROUTE_neighborhood_town_center, ROUTE_neighborhood_highway]
+ROUTE = routes[args.route-1]
 
 def handle_lidar(data):
     point_cloud = np.frombuffer(data.raw_data, dtype=np.float32).reshape([-1, 3])
@@ -118,18 +133,34 @@ def main():
         spectator_transform.rotation.roll = -1 
         spectator.set_transform(spectator_transform)
 
+        pc = vehicle.get_physics_control();
+        # get rid of the steering curve
+        pc.steering_curve = [carla.Vector2D(0.0, 1.0), carla.Vector2D(120.0, 1.0)];
+        vehicle.apply_physics_control(pc)
+
         # create a basic agent of the vehicle
         agent = BasicAgent(vehicle, target_speed=40)
         agent.set_destination_list(ROUTE)
 
+        # keep track of Vehicle State information
+        vd = VehicleData()
+
         # drive to waypoints until they are all gone
-        for i in range(150):
-            print(i)
+        while len(agent._local_planner._waypoints_queue) > 0:
+        # for i in range(150):
+            # print(i)
             world.wait_for_tick(10.00)
 
             control = agent.run_step()
             control.manual_gear_shift = False
             vehicle.apply_control(control)
+            vd.appendVelocityData(vehicle.get_velocity())
+            vd.appendControlData(control)
+            vd.appendPositionTruth(vehicle.get_location())
+
+        control.brake = 1.0
+        control.throttle = 0.0
+        vehicle.apply_control(control)
 
         print("Showing lidar")
         pcd = o3d.geometry.PointCloud()
@@ -137,6 +168,13 @@ def main():
         o3d.visualization.draw_geometries([pcd])
         # opt = o3d.visualization.get_render_option()
         # opt.background_color = np.asarray([0, 0, 0])
+
+        if args.plot:
+            vd.plot()
+
+        if args.vehicle_data_file is not None:
+            vd.saveToFile(args.vehicle_data_file)
+            print("Saved to {}".format(args.vehicle_data_file))
 
         print('Finished following waypoints')
 
