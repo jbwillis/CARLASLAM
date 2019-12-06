@@ -114,11 +114,11 @@ def main():
         # spawn the vehicle at the chosen waypoint and add it to the actor list
         vehicle = world.spawn_actor(bp, starting_wpt.transform)
         actor_list.append(vehicle)
+        print('created %s' % vehicle.type_id)
 
         lidar_data = []
         lidar = add_lidar_sensor(world, vehicle, lidar_data)
         actor_list.append(lidar)
-        print('created %s' % vehicle.type_id)
 
         # vehicle.set_autopilot(True)
 
