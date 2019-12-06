@@ -57,6 +57,30 @@ class VehicleData:
         steer = steer*self.max_steer_angle
         self.steer_data.append(steer)
 
+    def runMotionModelFull(self):
+        # run the motion model using already saved data and save off data for plotting
+        
+        self.odom_state = []
+
+        state_km1 = [0, 0, 0]
+
+        vd_np = np.array(self.velocity_data)
+        steer_ang_np = np.array(self.steer_data)
+
+        for indx in range(0, self.time_vec.size):
+
+            v = np.linalg.norm(vd_np[indx, 1:2])
+            gamma = steer_ang_np[indx]
+
+            if indx >= 1:
+                Ts = self.time_vec[indx] - self.time_vec[indx-1]
+            else:
+                Ts = self.time_vec[indx] - 0
+                
+            state_k = modelStep(state_km1, v, gamma, L, Ts)
+            self.odom_state.append(np.array(state_k))
+            state_km1 = state_k
+
     def plot(self):
         pw = plotWindow()
 
