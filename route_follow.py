@@ -187,7 +187,8 @@ def main():
 
         print('destroying actors')
         for actor in actor_list:
-            actor.destroy()
+            if actor.is_alive:
+                actor.destroy()
         print('done.')
 
 
