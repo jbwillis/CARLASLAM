@@ -14,6 +14,7 @@ class VehicleData:
         self.time_vec       = [] 
         self.position_zero  = None
         self.position_truth = []
+        self.heading_truth  = []
         self.velocity_data  = []
         self.throttle_data  = []
         self.steer_data     = []
@@ -26,9 +27,9 @@ class VehicleData:
         vel_arr = vector3DToNp(vel)
         self.velocity_data.append(vel_arr)
         
-    def appendPositionTruth(self, pos):
-        # pos is a carla.Vector3D object
-        pos_arr = vector3DToNp(pos)
+    def appendTransformTruth(self, txfm):
+        # txfm is a carla.Transform object
+        pos_arr = vector3DToNp(txfm.location)
 
         if self.position_zero is None:
             self.position_zero = pos_arr
@@ -37,6 +38,7 @@ class VehicleData:
         pos_arr = pos_arr - self.position_zero
 
         self.position_truth.append(pos_arr)
+        self.heading_truth.append(txfm.rotation.yaw)
 
     def appendControlData(self, cd):
         self._appendThrottleData(cd.throttle)
@@ -84,21 +86,26 @@ class VehicleData:
 
     def _plotPositionSubplots(self):
         # create 3 subplots of the position, returning a figure object
-        t      = np.array(self.time_vec)
-        pos_np = np.array(self.position_truth)
+        t       = np.array(self.time_vec)
+        pos_np  = np.array(self.position_truth)
+        head_np = np.array(self.heading_truth)
 
         f = plt.figure()
-        spx = f.add_subplot(3,1,1)
+        spx = f.add_subplot(4,1,1)
         spx.plot(t, pos_np[:,0]);
         spx.legend("x")
 
-        spy = f.add_subplot(3,1,2)
+        spy = f.add_subplot(4,1,2)
         spy.plot(t, pos_np[:,1]);
         spy.legend("y")
 
-        spz = f.add_subplot(3,1,3)
+        spz = f.add_subplot(4,1,3)
         spz.plot(t, pos_np[:,2]);
         spz.legend("z")
+
+        spz = f.add_subplot(4,1,4)
+        spz.plot(t, head_np);
+        spz.legend("heading")
 
         return f
 
