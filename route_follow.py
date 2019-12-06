@@ -161,7 +161,7 @@ def main():
             vd.appendTime(time)
             vd.appendVelocityData(vehicle.get_velocity())
             vd.appendControlData(control)
-            vd.appendPositionTruth(vehicle.get_location())
+            vd.appendTransformTruth(vehicle.get_transform())
 
         control.brake = 1.0
         control.throttle = 0.0
