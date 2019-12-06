@@ -178,15 +178,16 @@ class VehicleData:
         t_np         = np.array(self.time_vec)
         vd_np        = np.array(self.velocity_data)
         pos_np       = np.array(self.position_truth)
+        head_np      = np.array(self.heading_truth)
         throt_np     = np.array(self.throttle_data)
         steer_ang_np = np.array(self.steer_data)
 
         # concatenate the arrays into one big array
-        all_data = np.column_stack([t_np, vd_np, pos_np, throt_np, steer_ang_np])
+        all_data = np.column_stack([t_np, vd_np, pos_np, head_np, throt_np, steer_ang_np])
 
         # save it
         np.savetxt(filename, all_data, delimiter=', ', 
-                header='time, x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, throttle, steering angle')
+                header='time, x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, heading_tr, throttle, steering angle')
 
     def loadFromFile(self, filename):
         # load from file
@@ -196,8 +197,9 @@ class VehicleData:
         self.time_vec       = all_data[:,0:1]
         self.velocity_data  = all_data[:,1:4]
         self.position_truth = all_data[:,4:7]
-        self.throttle_data  = all_data[:,7:8]
-        self.steer_data     = all_data[:,8:9]
+        self.heading_truth  = all_data[:,7:8]
+        self.throttle_data  = all_data[:,8:9]
+        self.steer_data     = all_data[:,9:10]
         
 
 if __name__ == '__main__':
