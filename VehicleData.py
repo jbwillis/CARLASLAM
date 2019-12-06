@@ -117,23 +117,30 @@ class VehicleData:
         t       = np.array(self.time_vec)
         pos_np  = np.array(self.position_truth)
         head_np = np.array(self.heading_truth)
+        if len(self.odom_state) > 0:
+            odom_np = np.array(self.odom_state)
+        else:
+            odom_np = np.NaN*np.ones(t.shape[0], 3)
 
         f = plt.figure()
         spx = f.add_subplot(4,1,1)
-        spx.plot(t, pos_np[:,0]);
-        spx.legend("x")
+        spx.plot(t, pos_np[:,0])
+        spx.plot(t, odom_np[:,0])
+        spx.legend(["x", "x_odom"])
 
         spy = f.add_subplot(4,1,2)
-        spy.plot(t, pos_np[:,1]);
-        spy.legend("y")
+        spy.plot(t, pos_np[:,1])
+        spy.plot(t, odom_np[:,1])
+        spy.legend(["y", "y_odom"])
 
         spz = f.add_subplot(4,1,3)
         spz.plot(t, pos_np[:,2]);
-        spz.legend("z")
+        spz.legend(["z"])
 
-        spz = f.add_subplot(4,1,4)
-        spz.plot(t, head_np);
-        spz.legend("heading")
+        spth = f.add_subplot(4,1,4)
+        spth.plot(t, head_np);
+        spth.plot(t, odom_np[:,2])
+        spth.legend(["heading", "heading_odom"])
 
         return f
 
@@ -141,9 +148,15 @@ class VehicleData:
         # creates a 2D map of the position, returning a figure object
         pos_np = np.array(self.position_truth)
 
+        if len(self.odom_state) > 0:
+            odom_np = np.array(self.odom_state)
+        else:
+            odom_np = np.NaN*np.ones(t.shape[0], 3)
+
         f = plt.figure()
         sp = f.add_subplot(1,1,1)
         sp.plot(pos_np[:,0], pos_np[:,1])
+        sp.plot(odom_np[:,0], odom_np[:,1])
 
         sp.set_aspect('equal', 'box')
         # flip x axis to align with CARLA coordinate frame
