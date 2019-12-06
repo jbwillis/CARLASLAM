@@ -182,32 +182,49 @@ class VehicleData:
         throt_np     = np.array(self.throttle_data)
         steer_ang_np = np.array(self.steer_data)
 
+        wheelbase_np = np.array([self.wheelbase])
+        max_steer_np = np.array([self.max_steer_angle])
+
         # concatenate the arrays into one big array
         all_data = np.column_stack([t_np, vd_np, pos_np, head_np, throt_np, steer_ang_np])
 
-        # save it
-        np.savetxt(filename, all_data, delimiter=', ', 
-                header='time, x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, heading_tr, throttle, steering angle')
+        # save using savez
+        np.savez(filename,
+                t_np = t_np,
+                vd_np = vd_np,
+                pos_np = pos_np,
+                head_np = head_np,
+                throt_np = throt_np,
+                steer_ang_np = steer_ang_np,
+                wheelbase_np = wheelbase_np,
+                max_steer_np = max_steer_np)
 
-    def loadFromFile(self, filename):
-        # load from file
-        all_data = np.loadtxt(filename, delimiter=', ')
+def loadFromFile(filename):
+    # load from file
+    all_data = np.load(filename)
 
-        # extract arrays
-        self.time_vec       = all_data[:,0:1]
-        self.velocity_data  = all_data[:,1:4]
-        self.position_truth = all_data[:,4:7]
-        self.heading_truth  = all_data[:,7:8]
-        self.throttle_data  = all_data[:,8:9]
-        self.steer_data     = all_data[:,9:10]
-        
+    wheelbase      = all_data['wheelbase_np'].item(0)
+    max_steer_angle= all_data['max_steer_np'].item(0)
+
+    # create vehicle data object
+    vd = VehicleData(wheelbase = wheelbase, max_steer_angle = max_steer_angle)
+
+    # extract arrays
+    vd.time_vec       = all_data['t_np']
+    vd.velocity_data  = all_data['vd_np']
+    vd.position_truth = all_data['pos_np']
+    vd.heading_truth  = all_data['head_np']
+    vd.throttle_data  = all_data['throt_np']
+    vd.steer_data     = all_data['steer_ang_np']
+
+    return vd
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:
         fname = sys.argv[1]
-        vd = VehicleData()
-        vd.loadFromFile(fname)
+        vd = loadFromFile(fname)
+        vd.runMotionModelFull()
         vd.plot()
     else:
         print('Please specify a filename')
