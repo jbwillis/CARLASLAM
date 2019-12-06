@@ -172,6 +172,7 @@ def main():
         control.brake = 1.0
         control.throttle = 0.0
         vehicle.apply_control(control)
+        world.tick()
 
         print("Showing lidar")
         pcd = o3d.geometry.PointCloud()
