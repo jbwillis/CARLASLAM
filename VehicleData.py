@@ -21,6 +21,7 @@ class VehicleData:
         self.velocity_data  = []
         self.throttle_data  = []
         self.steer_data     = []
+        self.odom_state     = []
 
     def appendTime(self, t):
         self.time_vec.append(t)
@@ -62,17 +63,15 @@ class VehicleData:
     def runMotionModelFull(self):
         # run the motion model using already saved data and save off data for plotting
         
-        self.odom_state = []
+        state_km1 = [0, 0, self.heading_truth[0]]
 
-        state_km1 = [0, 0, 0]
-
-        vd_np = np.array(self.velocity_data)
+        vd_np        = np.array(self.velocity_data)
         steer_ang_np = np.array(self.steer_data)
 
         for indx in range(0, len(self.time_vec)):
 
-            v = np.linalg.norm(vd_np[indx, 1:2])
-            gamma = steer_ang_np[indx]
+            v = np.linalg.norm(vd_np[indx, 0:2])
+            gamma = np.deg2rad(steer_ang_np[indx])
 
             if indx >= 1:
                 Ts = self.time_vec[indx] - self.time_vec[indx-1]
