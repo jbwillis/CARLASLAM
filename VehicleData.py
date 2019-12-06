@@ -34,6 +34,8 @@ class VehicleData:
         # txfm is a carla.Transform object
         pos_arr = vector3DToNp(txfm.location)
 
+        yaw_rad = np.deg2rad(txfm.rotation.yaw)
+
         if self.position_zero is None:
             self.position_zero = pos_arr
 
@@ -41,7 +43,7 @@ class VehicleData:
         pos_arr = pos_arr - self.position_zero
 
         self.position_truth.append(pos_arr)
-        self.heading_truth.append(txfm.rotation.yaw)
+        self.heading_truth.append(yaw_rad)
 
     def appendControlData(self, cd):
         self._appendThrottleData(cd.throttle)
