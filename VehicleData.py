@@ -67,7 +67,7 @@ class VehicleData:
         vd_np = np.array(self.velocity_data)
         steer_ang_np = np.array(self.steer_data)
 
-        for indx in range(0, self.time_vec.size):
+        for indx in range(0, len(self.time_vec)):
 
             v = np.linalg.norm(vd_np[indx, 1:2])
             gamma = steer_ang_np[indx]
@@ -77,7 +77,7 @@ class VehicleData:
             else:
                 Ts = self.time_vec[indx] - 0
                 
-            state_k = modelStep(state_km1, v, gamma, L, Ts)
+            state_k = modelStep(state_km1, v, gamma, self.wheelbase, Ts)
             self.odom_state.append(np.array(state_k))
             state_km1 = state_k
 
