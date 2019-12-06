@@ -190,6 +190,12 @@ def main():
 
         print('Finished following waypoints')
 
+        # END - Take the simulation out of synchronous/fixed time mode
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
+
     finally:
 
         print('destroying actors')
