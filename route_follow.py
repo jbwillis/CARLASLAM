@@ -41,6 +41,7 @@ parser.add_argument('-vd', '--vehicle_data_file',
         help='The filename to save VehicleData to')
 parser.add_argument('-r', '--route', 
         help='The route # to use. 1 = Roundabout, 2 = Neighborhood and Town Center, 3 = Highway and Neighborhood. Default 1', default=1, type=int)
+parser.add_argument('-i', '--interact', help='End with an interactive prompt', action='store_true')
 
 args = parser.parse_args()
 
@@ -175,9 +176,9 @@ def main():
         world.tick()
 
         print("Showing lidar")
-        pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(lidar_data[15])
-        o3d.visualization.draw_geometries([pcd])
+        # pcd = o3d.geometry.PointCloud()
+        # pcd.points = o3d.utility.Vector3dVector(lidar_data[15])
+        # o3d.visualization.draw_geometries([pcd])
         # opt = o3d.visualization.get_render_option()
         # opt.background_color = np.asarray([0, 0, 0])
 
@@ -195,6 +196,10 @@ def main():
         settings.synchronous_mode = False
         settings.fixed_delta_seconds = None
         world.apply_settings(settings)
+
+        if args.interact:
+            import code
+            code.interact(local=locals())
 
     finally:
 
