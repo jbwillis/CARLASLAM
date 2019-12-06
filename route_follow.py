@@ -139,12 +139,18 @@ def main():
         pc.steering_curve = [carla.Vector2D(0.0, 1.0), carla.Vector2D(120.0, 1.0)];
         vehicle.apply_physics_control(pc)
 
+        # wheel positions are in global coordinates and in centimeters, convert to wheelbase
+        wheel_xy = np.array([(pc.wheels[0].position.x - pc.wheels[2].position.x), (pc.wheels[0].position.y - pc.wheels[2].position.y)])
+        wheelbase = 1e-2*np.linalg.norm(wheel_xy)
+
+        # keep track of Vehicle State information
+        max_steer = pc.wheels[0].max_steer_angle
+        vd = VehicleData(wheelbase, max_steer)
+
         # create a basic agent of the vehicle
         agent = BasicAgent(vehicle, target_speed=40)
         agent.set_destination_list(ROUTE)
 
-        # keep track of Vehicle State information
-        vd = VehicleData()
 
         # drive to waypoints until they are all gone
         while len(agent._local_planner._waypoints_queue) > 0:

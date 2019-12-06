@@ -4,12 +4,15 @@
 import numpy as np
 from utils import *
 
+from MotionModel import modelStep
+
 from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
 
 class VehicleData:
-    def __init__(self, max_steer_angle=70.0):
+    def __init__(self, wheelbase, max_steer_angle=70.0):
         self.max_steer_angle = max_steer_angle
+        self.wheelbase      = wheelbase
 
         self.time_vec       = [] 
         self.position_zero  = None
