@@ -183,6 +183,7 @@ def main():
         # opt.background_color = np.asarray([0, 0, 0])
 
         if args.plot:
+            vd.runMotionModelFull()
             vd.plot()
 
         if args.vehicle_data_file is not None:
