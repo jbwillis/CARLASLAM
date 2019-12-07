@@ -6,13 +6,11 @@ from utils import *
 
 from MotionModel import modelStep
 
-from plotWindow.plotWindow import plotWindow
+#from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
 
 class VehicleData:
-    def __init__(self, wheelbase, max_steer_angle=70.0):
-        self.max_steer_angle = max_steer_angle
-        self.wheelbase      = wheelbase
+    def __init__(self):
 
         self.time_vec       = [] 
         self.position_zero  = None
@@ -22,6 +20,13 @@ class VehicleData:
         self.throttle_data  = []
         self.steer_data     = []
         self.odom_state     = []
+        self.lidar_data     = []
+        self.max_steer_angle = None
+        self.wheelbase      = None
+
+    def config(self,wheelbase, max_steer_angle):
+        self.max_steer_angle = max_steer_angle
+        self.wheelbase      = wheelbase
 
     def appendTime(self, t):
         self.time_vec.append(t)
@@ -30,6 +35,9 @@ class VehicleData:
         # vel is a carla.Vector3D object
         vel_arr = vector3DToNp(vel)
         self.velocity_data.append(vel_arr)
+
+    def appendLidarData(self, new_data):
+        self.lidar_data.append(new_data)
         
     def appendTransformTruth(self, txfm):
         # txfm is a carla.Transform object
@@ -195,12 +203,13 @@ class VehicleData:
         head_np      = np.array(self.heading_truth)
         throt_np     = np.array(self.throttle_data)
         steer_ang_np = np.array(self.steer_data)
+        lidar_np     = np.array(self.lidar_data)
 
         wheelbase_np = np.array([self.wheelbase])
         max_steer_np = np.array([self.max_steer_angle])
 
         # concatenate the arrays into one big array
-        all_data = np.column_stack([t_np, vd_np, pos_np, head_np, throt_np, steer_ang_np])
+        all_data = np.column_stack([t_np, vd_np, pos_np, head_np, throt_np, steer_ang_np, lidar_np])
 
         # save using savez
         np.savez(filename,
@@ -211,7 +220,8 @@ class VehicleData:
                 throt_np = throt_np,
                 steer_ang_np = steer_ang_np,
                 wheelbase_np = wheelbase_np,
-                max_steer_np = max_steer_np)
+                max_steer_np = max_steer_np,
+                lidar_np = lidar_np)
 
 def loadFromFile(filename):
     # load from file
@@ -230,6 +240,7 @@ def loadFromFile(filename):
     vd.heading_truth  = all_data['head_np']
     vd.throttle_data  = all_data['throt_np']
     vd.steer_data     = all_data['steer_ang_np']
+    vd.lidar_data     = all_data["lidar_np"]
 
     return vd
 
