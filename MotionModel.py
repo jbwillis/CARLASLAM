@@ -1,5 +1,6 @@
 # propagate the motion model for the vehicle
 import numpy as np
+from utils import wrapToPi
 
 def modelStep(state_km1, v, gamma, L, Ts):
 
@@ -11,5 +12,7 @@ def modelStep(state_km1, v, gamma, L, Ts):
     y_k = y_km1 + v * np.sin(theta_km1) * Ts
     theta_k = theta_km1 + (v/L)*np.tan(gamma) * Ts
 
-    return [x_km1, y_km1, theta_km1]
+    theta_k = wrapToPi(theta_k)
+
+    return [x_k, y_k, theta_k]
 

@@ -41,6 +41,7 @@ parser.add_argument('-vd', '--vehicle_data_file',
         help='The filename to save VehicleData to')
 parser.add_argument('-r', '--route', 
         help='The route # to use. 1 = Roundabout, 2 = Neighborhood and Town Center, 3 = Highway and Neighborhood. Default 1', default=1, type=int)
+parser.add_argument('-i', '--interact', help='End with an interactive prompt', action='store_true')
 
 args = parser.parse_args()
 
@@ -173,11 +174,10 @@ def main():
         control.throttle = 0.0
         vehicle.apply_control(control)
         world.tick()
-
-        # opt = o3d.visualization.get_render_option()
-        # opt.background_color = np.asarray([0, 0, 0])
+        
 
         if args.plot:
+            vd.runMotionModelFull()
             vd.plot()
 
         if args.vehicle_data_file is not None:
@@ -185,6 +185,16 @@ def main():
             print("Saved to {}".format(args.vehicle_data_file))
 
         print('Finished following waypoints')
+
+        # END - Take the simulation out of synchronous/fixed time mode
+        settings = world.get_settings()
+        settings.synchronous_mode = False
+        settings.fixed_delta_seconds = None
+        world.apply_settings(settings)
+
+        if args.interact:
+            import code
+            code.interact(local=locals())
 
     finally:
 
