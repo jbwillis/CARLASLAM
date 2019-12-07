@@ -21,6 +21,7 @@ class VehicleData:
         self.velocity_data  = []
         self.throttle_data  = []
         self.steer_data     = []
+        self.odom_state     = []
 
     def appendTime(self, t):
         self.time_vec.append(t)
@@ -34,6 +35,8 @@ class VehicleData:
         # txfm is a carla.Transform object
         pos_arr = vector3DToNp(txfm.location)
 
+        yaw_rad = np.deg2rad(txfm.rotation.yaw)
+
         if self.position_zero is None:
             self.position_zero = pos_arr
 
@@ -41,7 +44,7 @@ class VehicleData:
         pos_arr = pos_arr - self.position_zero
 
         self.position_truth.append(pos_arr)
-        self.heading_truth.append(txfm.rotation.yaw)
+        self.heading_truth.append(yaw_rad)
 
     def appendControlData(self, cd):
         self._appendThrottleData(cd.throttle)
@@ -60,24 +63,22 @@ class VehicleData:
     def runMotionModelFull(self):
         # run the motion model using already saved data and save off data for plotting
         
-        self.odom_state = []
+        state_km1 = [0, 0, self.heading_truth[0]]
 
-        state_km1 = [0, 0, 0]
-
-        vd_np = np.array(self.velocity_data)
+        vd_np        = np.array(self.velocity_data)
         steer_ang_np = np.array(self.steer_data)
 
-        for indx in range(0, self.time_vec.size):
+        for indx in range(0, len(self.time_vec)):
 
-            v = np.linalg.norm(vd_np[indx, 1:2])
-            gamma = steer_ang_np[indx]
+            v = np.linalg.norm(vd_np[indx, 0:2])
+            gamma = np.deg2rad(steer_ang_np[indx])
 
             if indx >= 1:
                 Ts = self.time_vec[indx] - self.time_vec[indx-1]
             else:
                 Ts = self.time_vec[indx] - 0
                 
-            state_k = modelStep(state_km1, v, gamma, L, Ts)
+            state_k = modelStep(state_km1, v, gamma, self.wheelbase, Ts)
             self.odom_state.append(np.array(state_k))
             state_km1 = state_k
 
@@ -116,23 +117,30 @@ class VehicleData:
         t       = np.array(self.time_vec)
         pos_np  = np.array(self.position_truth)
         head_np = np.array(self.heading_truth)
+        if len(self.odom_state) > 0:
+            odom_np = np.array(self.odom_state)
+        else:
+            odom_np = np.NaN*np.ones(t.shape[0], 3)
 
         f = plt.figure()
         spx = f.add_subplot(4,1,1)
-        spx.plot(t, pos_np[:,0]);
-        spx.legend("x")
+        spx.plot(t, pos_np[:,0])
+        spx.plot(t, odom_np[:,0])
+        spx.legend(["x", "x_odom"])
 
         spy = f.add_subplot(4,1,2)
-        spy.plot(t, pos_np[:,1]);
-        spy.legend("y")
+        spy.plot(t, pos_np[:,1])
+        spy.plot(t, odom_np[:,1])
+        spy.legend(["y", "y_odom"])
 
         spz = f.add_subplot(4,1,3)
         spz.plot(t, pos_np[:,2]);
-        spz.legend("z")
+        spz.legend(["z"])
 
-        spz = f.add_subplot(4,1,4)
-        spz.plot(t, head_np);
-        spz.legend("heading")
+        spth = f.add_subplot(4,1,4)
+        spth.plot(t, head_np);
+        spth.plot(t, odom_np[:,2])
+        spth.legend(["heading", "heading_odom"])
 
         return f
 
@@ -140,9 +148,15 @@ class VehicleData:
         # creates a 2D map of the position, returning a figure object
         pos_np = np.array(self.position_truth)
 
+        if len(self.odom_state) > 0:
+            odom_np = np.array(self.odom_state)
+        else:
+            odom_np = np.NaN*np.ones(t.shape[0], 3)
+
         f = plt.figure()
         sp = f.add_subplot(1,1,1)
         sp.plot(pos_np[:,0], pos_np[:,1])
+        sp.plot(odom_np[:,0], odom_np[:,1])
 
         sp.set_aspect('equal', 'box')
         # flip x axis to align with CARLA coordinate frame
@@ -178,34 +192,53 @@ class VehicleData:
         t_np         = np.array(self.time_vec)
         vd_np        = np.array(self.velocity_data)
         pos_np       = np.array(self.position_truth)
+        head_np      = np.array(self.heading_truth)
         throt_np     = np.array(self.throttle_data)
         steer_ang_np = np.array(self.steer_data)
 
+        wheelbase_np = np.array([self.wheelbase])
+        max_steer_np = np.array([self.max_steer_angle])
+
         # concatenate the arrays into one big array
-        all_data = np.column_stack([t_np, vd_np, pos_np, throt_np, steer_ang_np])
+        all_data = np.column_stack([t_np, vd_np, pos_np, head_np, throt_np, steer_ang_np])
 
-        # save it
-        np.savetxt(filename, all_data, delimiter=', ', 
-                header='time, x_vel, y_vel, z_vel, x_pos_tr, y_pos_tr, z_pos_tr, throttle, steering angle')
+        # save using savez
+        np.savez(filename,
+                t_np = t_np,
+                vd_np = vd_np,
+                pos_np = pos_np,
+                head_np = head_np,
+                throt_np = throt_np,
+                steer_ang_np = steer_ang_np,
+                wheelbase_np = wheelbase_np,
+                max_steer_np = max_steer_np)
 
-    def loadFromFile(self, filename):
-        # load from file
-        all_data = np.loadtxt(filename, delimiter=', ')
+def loadFromFile(filename):
+    # load from file
+    all_data = np.load(filename)
 
-        # extract arrays
-        self.time_vec       = all_data[:,0:1]
-        self.velocity_data  = all_data[:,1:4]
-        self.position_truth = all_data[:,4:7]
-        self.throttle_data  = all_data[:,7:8]
-        self.steer_data     = all_data[:,8:9]
-        
+    wheelbase      = all_data['wheelbase_np'].item(0)
+    max_steer_angle= all_data['max_steer_np'].item(0)
+
+    # create vehicle data object
+    vd = VehicleData(wheelbase = wheelbase, max_steer_angle = max_steer_angle)
+
+    # extract arrays
+    vd.time_vec       = all_data['t_np']
+    vd.velocity_data  = all_data['vd_np']
+    vd.position_truth = all_data['pos_np']
+    vd.heading_truth  = all_data['head_np']
+    vd.throttle_data  = all_data['throt_np']
+    vd.steer_data     = all_data['steer_ang_np']
+
+    return vd
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:
         fname = sys.argv[1]
-        vd = VehicleData()
-        vd.loadFromFile(fname)
+        vd = loadFromFile(fname)
+        vd.runMotionModelFull()
         vd.plot()
     else:
         print('Please specify a filename')
