@@ -1,4 +1,5 @@
 import numpy as np
+import params as P
 
 def scanmatch(subliklihoodfield, scan, pose):
     # returns the most likely pose that the scan was taken from
@@ -8,12 +9,19 @@ def liklihoodField(map):
     # generate a liklihood field of a given map
     pass
 
-def gridMapFromScan(scan, n_cells):
+def integrateScan(map, scan, pose_xy):
+        pass
+
+def gridMapFromScan(scan, resolution_m, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
     # the map will be n_cells X n_cells and the pose origin is at the center
+    n_cells = 2*int(radius/resolution_m)
+    gridmap = np.zeros((n_cells, n_cells))
+
+def _inverseSensorModel():
     pass
     
-    
+        
 
 
 class map:
@@ -24,9 +32,6 @@ class map:
         self.global_origin  = global_origin # integer
 
         self.gridmap      = np.ones((n_cells, n_cells))
-
-    def integrateScan(self, scan, pose_xy):
-        pass
 
     def getSubmap(self, centerpoint, radius):
         # given a centerpoint (in the robot's global coordinates)
