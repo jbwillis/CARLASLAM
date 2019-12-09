@@ -6,7 +6,7 @@ from utils import *
 
 from MotionModel import modelStep
 
-#from plotWindow.plotWindow import plotWindow
+from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
 
 class VehicleData:
@@ -24,7 +24,7 @@ class VehicleData:
         self.max_steer_angle = None
         self.wheelbase      = None
 
-    def config(self,wheelbase, max_steer_angle):
+    def config(self, wheelbase, max_steer_angle):
         self.max_steer_angle = max_steer_angle
         self.wheelbase      = wheelbase
 
@@ -208,9 +208,6 @@ class VehicleData:
         wheelbase_np = np.array([self.wheelbase])
         max_steer_np = np.array([self.max_steer_angle])
 
-        # concatenate the arrays into one big array
-        all_data = np.column_stack([t_np, vd_np, pos_np, head_np, throt_np, steer_ang_np, lidar_np])
-
         # save using savez
         np.savez(filename,
                 t_np = t_np,
@@ -225,13 +222,14 @@ class VehicleData:
 
 def loadFromFile(filename):
     # load from file
-    all_data = np.load(filename)
+    all_data = np.load(filename, allow_pickle=True)
 
     wheelbase      = all_data['wheelbase_np'].item(0)
     max_steer_angle= all_data['max_steer_np'].item(0)
 
     # create vehicle data object
-    vd = VehicleData(wheelbase = wheelbase, max_steer_angle = max_steer_angle)
+    vd = VehicleData()
+    vd.config(wheelbase = wheelbase, max_steer_angle = max_steer_angle)
 
     # extract arrays
     vd.time_vec       = all_data['t_np']
