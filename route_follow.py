@@ -38,8 +38,6 @@ parser = argparse.ArgumentParser(description='Follow a route in the CARLA simula
 parser.add_argument('-p', '--plot', help='plot the vehicle data', action='store_true')
 parser.add_argument('-vd', '--vehicle_data_file', 
         help='The filename to save VehicleData to')
-parser.add_argument('-sd', '--sensor_data_file',
-        help='The filename to save SensorData to')
 parser.add_argument('-r', '--route', 
         help='The route # to use. 1 = Roundabout, 2 = Neighborhood and Town Center, 3 = Highway and Neighborhood. Default 1', default=1, type=int)
 parser.add_argument('-i', '--interact', help='End with an interactive prompt', action='store_true')
@@ -180,10 +178,6 @@ def main():
 
         if args.vehicle_data_file is not None:
             vd.saveToFile(args.vehicle_data_file)
-            print("Saved to {}".format(args.vehicle_data_file))
-
-        if args.sensor_data_file is not None:
-            sd.saveToFile(args.vehicle_data_file)
             print("Saved to {}".format(args.vehicle_data_file))
 
         print('Finished following waypoints')
