@@ -97,8 +97,37 @@ class VehicleData:
         pw.addPlot("Positions", self._plotPositionSubplots())
         pw.addPlot("Velocities", self._plotVelocity())
         pw.addPlot("Controls", self._plotControl())
+        pw.addPlot("Lidar", self._plotLidarScan(10))
 
         pw.show()
+
+    def _plotLidarScan(self, scan_n):
+        print self.lidar_data.shape
+        scan = self.lidar_data[scan_n]
+        print scan.shape
+
+        # threshold
+        th_idx = abs(scan[:,0]) < 100
+        scan = scan[th_idx,:]
+        th_idx = abs(scan[:,0]) > .1
+        scan = scan[th_idx,:]
+
+        th_idx = abs(scan[:,1]) < 100
+        scan = scan[th_idx,:]
+        th_idx = abs(scan[:,1]) > .1
+        scan = scan[th_idx,:]
+        
+        th_idx = scan[:,2] < 1
+        scan = scan[th_idx,:]
+
+        th_idx = scan[:,2] > -1.5
+        scan = scan[th_idx,:]
+        
+        f, ax = plt.subplots()
+        ax.scatter(scan[:,1], scan[:,0])
+        ax.axis('equal')
+
+        return f
 
     def _plotVelocity(self):
         # creates and returns a matplotlib figure object
