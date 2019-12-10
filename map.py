@@ -16,7 +16,15 @@ def gridMapFromScan(scan, resolution_m, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
     # the map will be n_cells X n_cells and the pose origin is at the center
     n_cells = 2*int(radius/resolution_m)
-    gridmap = np.zeros((n_cells, n_cells))
+
+    ogmap = map(resolution_m, n_cells, np.array([0., 0.]))
+    ogmap.gridmap = 0.0*ogmap.gridmap
+
+    # for each beam, update the map
+    for beam in scan:
+        pass
+
+
 
 def _inverseSensorModel():
     pass
