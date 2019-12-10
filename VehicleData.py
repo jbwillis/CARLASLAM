@@ -3,6 +3,7 @@
 
 import numpy as np
 from utils import *
+import map
 
 from MotionModel import modelStep
 
@@ -122,9 +123,13 @@ class VehicleData:
 
         th_idx = scan[:,2] > -1.5
         scan = scan[th_idx,:]
+
+        # generate occupancy grid map
+        m = map.gridMapFromScan(scan, 1, 100)
         
         f, ax = plt.subplots()
-        ax.scatter(scan[:,1], scan[:,0])
+        im = ax.pcolormesh(m.gridmap, vmax=10, vmin=-10)
+        f.colorbar(im, ax=ax)
         ax.axis('equal')
 
         return f
