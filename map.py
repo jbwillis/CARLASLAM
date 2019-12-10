@@ -1,11 +1,12 @@
 import numpy as np
 import params as P
+import skimage.draw as skd
 
 def scanmatch(subliklihoodfield, scan, pose):
     # returns the most likely pose that the scan was taken from
     pass
 
-def liklihoodField(map):
+def likelihoodField(map):
     # generate a liklihood field of a given map
     pass
 
@@ -17,20 +18,24 @@ def gridMapFromScan(scan, resolution_m, radius):
     # the map will be n_cells X n_cells and the pose origin is at the center
     n_cells = 2*int(radius/resolution_m)
 
-    ogmap = map(resolution_m, n_cells, np.array([0., 0.]))
+    ogmap = map(resolution_m, n_cells, np.array([n_cells/2, n_cells/2]))
     ogmap.gridmap = 0.0*ogmap.gridmap
 
+    pose_cell = ogmap._poseToMapIndex(np.array([0, 0]))
     # for each beam, update the map
+    import matplotlib.pyplot as plt
+
     for beam in scan:
-        pass
+        # convert global coordinates of beampoint to gridmap coordinates
+        point_cell = ogmap._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
 
+        # get cells along line between pose cells and beampoint cells
+        beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1), 
+                                    point_cell.item(0), point_cell.item(1))
 
-
-def _inverseSensorModel():
-    pass
-    
-        
-
+        ogmap.gridmap[beam_rr, beam_cc] = ogmap.gridmap[beam_rr, beam_cc] + P.ell_free
+        ogmap.gridmap[point_cell.item(0), point_cell.item(1)] = ogmap.gridmap[point_cell.item(0), point_cell.item(1)] + P.ell_occ
+    return ogmap
 
 class map:
     def __init__(self, resolution_m, n_cells, global_origin):
