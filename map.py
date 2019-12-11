@@ -1,5 +1,5 @@
 import numpy as np
-import params as P
+from params import global_params as GP
 import skimage.draw as skd
 
 def scanmatch(subliklihoodfield, scan, pose):
@@ -33,8 +33,8 @@ def gridMapFromScan(scan, resolution_m, radius):
         beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1), 
                                     point_cell.item(0), point_cell.item(1))
 
-        ogmap.gridmap[beam_rr, beam_cc] = ogmap.gridmap[beam_rr, beam_cc] + P.ell_free
-        ogmap.gridmap[point_cell.item(0), point_cell.item(1)] = ogmap.gridmap[point_cell.item(0), point_cell.item(1)] + P.ell_occ
+        ogmap.gridmap[beam_rr, beam_cc] = ogmap.gridmap[beam_rr, beam_cc] + GP.ell_free
+        ogmap.gridmap[point_cell.item(0), point_cell.item(1)] = ogmap.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
     return ogmap
 
 class Map:

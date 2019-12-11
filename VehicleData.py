@@ -82,12 +82,7 @@ class VehicleData:
             v = np.linalg.norm(vd_np[indx, 0:2])
             gamma = np.deg2rad(steer_ang_np[indx])
 
-            if indx >= 1:
-                Ts = self.time_vec[indx] - self.time_vec[indx-1]
-            else:
-                Ts = self.time_vec[indx] - 0
-                
-            state_k = modelStep(state_km1, v, gamma, self.wheelbase, Ts)
+            state_k = modelStep(state_km1, [v, gamma])
             self.odom_state.append(np.array(state_k))
             state_km1 = state_k
 
@@ -260,9 +255,16 @@ def loadFromFile(filename):
 
 if __name__ == '__main__':
     import sys
+    from params import global_params as GP
+
     if len(sys.argv) > 1:
         fname = sys.argv[1]
         vd = loadFromFile(fname)
+        
+        # set global parameters
+        GP.wheelbase = vd.wheelbase
+        GP.Ts = vd.time_vec[1] - vd.time_vec[0] 
+
         vd.runMotionModelFull()
         vd.plot()
     else:
