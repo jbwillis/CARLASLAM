@@ -2,11 +2,18 @@
 import numpy as np
 from utils import wrapToPi
 
-def modelStep(state_km1, v, gamma, L, Ts):
+from params import global_params as GP
+
+def modelStep(state_km1, odom):
+    L  = GP.wheelbase
+    Ts = GP.Ts
 
     x_km1     = state_km1[0]
     y_km1     = state_km1[1]
     theta_km1 = state_km1[2]
+
+    v         = odom[0]
+    gamma     = odom[1]
 
     x_k = x_km1 + v * np.cos(theta_km1) * Ts
     y_k = y_km1 + v * np.sin(theta_km1) * Ts
