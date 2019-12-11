@@ -33,6 +33,6 @@ class Params(SingletonParent):
         self.ell_free = np.log(p_free/(1-p_free))
 
         # resolution of all occupancy grid maps
-        resolution_m = 1
+        self.resolution_m = 1
 
 global_params = Params()
