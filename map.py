@@ -18,7 +18,7 @@ def gridMapFromScan(scan, resolution_m, radius):
     # the map will be n_cells X n_cells and the pose origin is at the center
     n_cells = 2*int(radius/resolution_m)
 
-    ogmap = map(resolution_m, n_cells, np.array([n_cells/2, n_cells/2]))
+    ogmap = Map(resolution_m, n_cells, np.array([n_cells/2, n_cells/2]))
     ogmap.gridmap = 0.0*ogmap.gridmap
 
     pose_cell = ogmap._poseToMapIndex(np.array([0, 0]))
@@ -37,7 +37,7 @@ def gridMapFromScan(scan, resolution_m, radius):
         ogmap.gridmap[point_cell.item(0), point_cell.item(1)] = ogmap.gridmap[point_cell.item(0), point_cell.item(1)] + P.ell_occ
     return ogmap
 
-class map:
+class Map:
     def __init__(self, resolution_m, n_cells, global_origin):
         self.resolution_m = resolution_m
 
