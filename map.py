@@ -13,12 +13,12 @@ def likelihoodField(map):
 def integrateScan(map, scan, pose_xy):
         pass
 
-def gridMapFromScan(scan, resolution_m, radius):
+def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
     # the map will be n_cells X n_cells and the pose origin is at the center
-    n_cells = 2*int(radius/resolution_m)
+    n_cells = 2*int(radius/GP.resolution_m)
 
-    ogmap = Map(resolution_m, n_cells, np.array([n_cells/2, n_cells/2]))
+    ogmap = Map(n_cells, np.array([n_cells/2, n_cells/2]))
     ogmap.gridmap = 0.0*ogmap.gridmap
 
     pose_cell = ogmap._poseToMapIndex(np.array([0, 0]))
@@ -38,9 +38,7 @@ def gridMapFromScan(scan, resolution_m, radius):
     return ogmap
 
 class Map:
-    def __init__(self, resolution_m, n_cells, global_origin):
-        self.resolution_m = resolution_m
-
+    def __init__(self, n_cells, global_origin):
         # origin of map with respect to global robot coordinate frame
         self.global_origin  = global_origin # integer
 
@@ -75,7 +73,7 @@ class Map:
         coord = coord_yx[::-1] # flip x and y to coorespond to correct global coordinates
         
         coord = coord - self.global_origin
-        pose_xy = coord*self.resolution_m
+        pose_xy = coord*GP.resolution_m
         pose_xy = pose_xy.astype(np.double)
 
         return pose_xy
@@ -91,7 +89,7 @@ class Map:
             import pdb; pdb.set_trace()
 
         
-        coord = (pose_xy/self.resolution_m)
+        coord = (pose_xy/GP.resolution_m)
         coord = coord.astype(np.int)
         coord = coord + self.global_origin
 

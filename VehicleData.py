@@ -102,7 +102,7 @@ class VehicleData:
 
         scan = thresholdScan(scan)
         # generate occupancy grid map
-        m  = map.gridMapFromScan(scan, 1, 100)
+        m  = map.gridMapFromScan(scan, 100)
 
         f, ax = plt.subplots()
         im = ax.pcolormesh(m.gridmap, vmax=10, vmin=-10)
