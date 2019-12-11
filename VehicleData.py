@@ -98,35 +98,17 @@ class VehicleData:
         pw.addPlot("Positions", self._plotPositionSubplots())
         pw.addPlot("Velocities", self._plotVelocity())
         pw.addPlot("Controls", self._plotControl())
-        pw.addPlot("Lidar", self._plotLidarScan(10))
+        pw.addPlot("Lidar", self._plotLidarScan(50))
 
         pw.show()
 
     def _plotLidarScan(self, scan_n):
-        print self.lidar_data.shape
         scan = self.lidar_data[scan_n]
-        print scan.shape
 
-        # threshold
-        th_idx = abs(scan[:,0]) < 100
-        scan = scan[th_idx,:]
-        th_idx = abs(scan[:,0]) > .1
-        scan = scan[th_idx,:]
-
-        th_idx = abs(scan[:,1]) < 100
-        scan = scan[th_idx,:]
-        th_idx = abs(scan[:,1]) > .1
-        scan = scan[th_idx,:]
-        
-        th_idx = scan[:,2] < 1
-        scan = scan[th_idx,:]
-
-        th_idx = scan[:,2] > -1.5
-        scan = scan[th_idx,:]
-
+        scan = thresholdScan(scan)
         # generate occupancy grid map
-        m = map.gridMapFromScan(scan, 1, 100)
-        
+        m  = map.gridMapFromScan(scan, 1, 100)
+
         f, ax = plt.subplots()
         im = ax.pcolormesh(m.gridmap, vmax=10, vmin=-10)
         f.colorbar(im, ax=ax)
