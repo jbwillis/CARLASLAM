@@ -4,8 +4,31 @@ import skimage.draw as skd
 from scipy.ndimage.filters import gaussian_filter
 
 
-def correlationFit(map1, map2):
-    
+def transformScan(scan, motion):
+    # motion is array [x,y,theta]
+    x,y,theta = motion
+    scan = np.copy(scan)
+
+    rot_matrix = np.array([[cos(theta), -sin(theta), x]
+                           [sin(theta), cos(theta), y]
+                           [0, 0, 1]])
+
+    scan_aug = np.column_stack(scan[:2], np.ones(scan.shape[0]))
+
+    scan = rot_matrix * scan_aug.T
+
+    return scan.T
+
+def correlationFit(likelihood_map, scan, motion):
+
+    scan = transformScan(scan, motion)
+
+    score = 0
+    for beam in scan:
+        point_cell = map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
+        score += likelihood_map.gridmap[point_cell]
+
+    return score
 
 def scanmatch(subliklihoodfield, scan, pose):
     # returns the most likely pose that the scan was taken from
