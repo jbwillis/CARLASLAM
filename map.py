@@ -9,13 +9,13 @@ def transformScan(scan, motion):
     x,y,theta = motion
     scan = np.copy(scan)
 
-    rot_matrix = np.array([[cos(theta), -sin(theta), x]
-                           [sin(theta), cos(theta), y]
+    rot_matrix = np.array([[np.cos(theta), -np.sin(theta), x],
+                           [np.sin(theta), np.cos(theta), y], 
                            [0, 0, 1]])
 
-    scan_aug = np.column_stack(scan[:2], np.ones(scan.shape[0]))
+    scan_aug = np.column_stack([scan[:, :2], np.ones(scan.shape[0])])
 
-    scan = rot_matrix * scan_aug.T
+    scan = rot_matrix @ scan_aug.T
 
     return scan.T
 
