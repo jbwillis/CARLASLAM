@@ -7,17 +7,19 @@ from scipy.ndimage.filters import gaussian_filter
 def transformScan(scan, motion):
     # motion is array [x,y,theta]
     x,y,theta = motion
-    scan = np.copy(scan)
+    scan_prev = np.copy(scan)
 
     rot_matrix = np.array([[np.cos(theta), -np.sin(theta), x],
                            [np.sin(theta), np.cos(theta), y], 
                            [0, 0, 1]])
 
-    scan_aug = np.column_stack([scan[:, :2], np.ones(scan.shape[0])])
+    scan_aug = np.column_stack([scan_prev[:, :2], np.ones(scan_prev.shape[0])])
 
-    scan = rot_matrix @ scan_aug.T
+    scan = np.matmul(rot_matrix, scan_aug.T)
 
-    return scan.T
+    scan = np.column_stack([scan.T[:, :2], scan_prev[:, 2]])
+
+    return scan
 
 def correlationFit(likelihood_map, scan, motion):
 
