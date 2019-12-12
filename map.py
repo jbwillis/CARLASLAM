@@ -1,17 +1,28 @@
 import numpy as np
 from params import global_params as GP
 import skimage.draw as skd
+from scipy.ndimage.filters import gaussian_filter
 
 def scanmatch(subliklihoodfield, scan, pose):
     # returns the most likely pose that the scan was taken from
     pass
 
 def likelihoodField(map):
-    # generate a liklihood field of a given map
-    pass
+    # scan is a set of points
+    # generate a likelihood field of a given map
+    occupied_thresh = 1.0
+    occupied = np.copy(map)
+    occupied[occupied < occupied_thresh] = 0.0
+    occupied[occupied >= occupied_thresh] = 1.0
+
+    blurred = gaussian_filter(occupied, sigma=GP.sigma_d)
+    blurred[blurred > 1] = 1.0
+    return blurred
+
+
 
 def integrateScan(map, scan, pose_xy):
-        pass
+    pass
 
 def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
@@ -91,7 +102,7 @@ class Map:
         
         coord = (pose_xy/GP.resolution_m)
         coord = coord.astype(np.int)
-        coord = coord + self.global_origin
+        coord = coord + self.global_origin.astype(np.int)
 
         coord = coord[::-1] # flip x and y to coorespond to correct matrix coordinates
         
