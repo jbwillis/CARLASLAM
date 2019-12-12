@@ -25,6 +25,7 @@ class Params(SingletonParent):
         self.scan_min_xy = .1
         self.scan_max_z  = 1
         self.scan_min_z  = -1.5
+        self.sigma_d = 0.01
 
         # Occupancy grid log-odds
         p_occ    = .7

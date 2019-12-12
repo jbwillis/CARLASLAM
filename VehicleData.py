@@ -7,7 +7,7 @@ import map
 
 from MotionModel import modelStep
 
-from plotWindow.plotWindow import plotWindow
+#from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
 
 class VehicleData:
@@ -233,7 +233,7 @@ class VehicleData:
 
 def loadFromFile(filename):
     # load from file
-    all_data = np.load(filename, allow_pickle=True)
+    all_data = np.load(filename, allow_pickle=True, encoding='bytes')
 
     wheelbase      = all_data['wheelbase_np'].item(0)
     max_steer_angle= all_data['max_steer_np'].item(0)
