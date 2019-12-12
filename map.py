@@ -3,9 +3,16 @@ from params import global_params as GP
 import skimage.draw as skd
 from scipy.ndimage.filters import gaussian_filter
 
+
+def correlationFit(map1, map2):
+    
+
 def scanmatch(subliklihoodfield, scan, pose):
     # returns the most likely pose that the scan was taken from
+    # searches within
     pass
+
+
 
 def likelihoodField(map):
     # scan is a set of points
@@ -19,10 +26,20 @@ def likelihoodField(map):
     blurred[blurred > 1] = 1.0
     return blurred
 
-
-
 def integrateScan(map, scan, pose_xy):
-    pass
+    for beam in scan:
+        # convert global coordinates of beampoint to gridmap coordinates
+        point_cell = map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
+
+        pose_cell = map._poseToMapIndex(pose_xy)
+
+        # get cells along line between pose cells and beampoint cells
+        beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1),
+                                    point_cell.item(0), point_cell.item(1))
+
+        map.gridmap[beam_rr, beam_cc] = map.gridmap[beam_rr, beam_cc] + GP.ell_free
+        map.gridmap[point_cell.item(0), point_cell.item(1)] = map.gridmap[
+                                                                    point_cell.item(0), point_cell.item(1)] + GP.ell_occ
 
 def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
