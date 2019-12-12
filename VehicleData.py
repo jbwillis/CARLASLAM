@@ -93,12 +93,17 @@ class VehicleData:
         pw.addPlot("Positions", self._plotPositionSubplots())
         pw.addPlot("Velocities", self._plotVelocity())
         pw.addPlot("Controls", self._plotControl())
-        pw.addPlot("Lidar", self._plotLidarScan(50))
 
-        # pw.show()
+        scan = thresholdScan(self.lidar_data[10])
+        scanR1 = map.transformScan(scan, [0, 0, np.pi/4])
+        scanR2 = map.transformScan(scan, [0, 0, -np.pi/2])
+        pw.addPlot("Lidar", self._plotLidarScan(scan))
+        pw.addPlot("Lidar + pi/4", self._plotLidarScan(scanR1))
+        pw.addPlot("Lidar - pi/2", self._plotLidarScan(scanR2))
 
-    def _plotLidarScan(self, scan_n):
-        scan = self.lidar_data[scan_n]
+        pw.show()
+
+    def _plotLidarScan(self, scan):
 
         scan = thresholdScan(scan)
         # generate occupancy grid map
