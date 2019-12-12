@@ -22,7 +22,11 @@ def runStep(particle_set_tm1, scan_t, odom_tm1):
         # scan matching
         x_t_pr  = modelStep(particle.pose, odom_tm1) # propagate the particle's state forward
 
-        #x_t_hat = scanmatch(subliklihoodfield, scan_t, x_t_pr)
+        x_t_hat, success = scanmatch(subliklihoodfield, scan_t, x_t_pr)
+
+        if not success:
+            # scanmatch didn't find an alignment in the map
+            # new_pose =  
 
 
 def runGMapping():

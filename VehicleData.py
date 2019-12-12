@@ -7,7 +7,7 @@ import map
 
 from MotionModel import modelStep
 
-#from plotWindow.plotWindow import plotWindow
+from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
 
 class VehicleData:
@@ -95,7 +95,7 @@ class VehicleData:
         pw.addPlot("Controls", self._plotControl())
         pw.addPlot("Lidar", self._plotLidarScan(50))
 
-        pw.show()
+        # pw.show()
 
     def _plotLidarScan(self, scan_n):
         scan = self.lidar_data[scan_n]

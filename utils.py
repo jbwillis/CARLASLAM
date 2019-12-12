@@ -30,3 +30,7 @@ def thresholdScan(scan):
 
     return scan
 
+def prob_normal_distribution(q, b_sq):
+    # zero-mean single dimensional gaussian density
+    # table 5.2, Probabilistic Robotics
+    return 1/np.sqrt(2*pi*b_sq) * np.exp(-(1/2)*(a^2)/b_sq);
