@@ -39,7 +39,6 @@ def scanmatch(subliklihoodfield, scan, pose):
 
 
 def likelihoodField(map):
-    # scan is a set of points
     # generate a likelihood field of a given map
     occupied_thresh = 1.0
     occupied = np.copy(map)

@@ -74,6 +74,25 @@ def testTransformScan(vd):
     # scanR3 should be identical to scan
     np.testing.assert_array_almost_equal(scan, scanR3)
 
+def testLikelihoodField(pw):
+    m = np.zeros([100, 100])
+    m[20:50, 60:95] = 1
+    m[45:70, 5:30] = 1
+    
+    f = plt.figure()
+    plt.pcolormesh(m)
+    plt.axis('equal')
+
+    pw.addPlot("Solid Map", f)
+
+    blurred_m = likelihoodField(m)
+
+    f = plt.figure()
+    plt.pcolormesh(blurred_m)
+    plt.axis('equal')
+
+    pw.addPlot("blurred", f)
+
 if __name__ == '__main__':
       
     vd = loadFromFile("captured_data/route1_vd.npz")
@@ -87,5 +106,6 @@ if __name__ == '__main__':
     testTransformScanPlot(pw, vd)
     testSampleMotionModel(pw)
     testProbMotionModel(pw)
+    testLikelihoodField(pw)
 
     pw.show()
