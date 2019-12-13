@@ -51,5 +51,10 @@ class Params(SingletonParent):
         self.sample_K     = 10
         self.sample_delta = .5
 
+        # particle set related parameters
+        self.N_particles = 25
+        self.resample_threshold = self.N_particles/2
+
+
 
 global_params = Params()

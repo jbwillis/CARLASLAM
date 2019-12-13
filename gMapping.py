@@ -3,13 +3,15 @@ from MotionModel import *
 from map import *
 from VehicleData import *
 
-def runStep(particle_set_tm1, scan_t, odom_tm1):
+def runStep(particle_set, scan_t, odom_tm1):
 
     # convert scan into occupancy grid map
 
     #gridMapFromScan(scan, radius)
 
-    for particle in particle_set_tm1:
+    weights_total = 0 # keep track of all weights for normalization
+
+    for particle in particle_set:
 
         # particle has:
         # particle.pose
@@ -67,10 +69,30 @@ def runStep(particle_set_tm1, scan_t, odom_tm1):
         # TODO: Verify this function call/return value
         particle.map.gridmap = integrateScan(particle.map.gridmap, particle.pose, scan_t)
 
-        # update sample set (nothing to be done here, as the particle is already updated)
+        # sum each particles weight
+        weights_total += particle.weight
 
-    return particle_set_tm1
+    # normalize particle weights
+    for particle in particle_set:
+        particle.weight /= weights_total
 
+    # determine if particles should be resampled
+    N_eff = computeEffectiveSampleSize(particle_set)
+
+    if N_eff < GP.resample_threshold:
+        particle_set = resampleParticleSet(particle_set)
+
+    return particle_set
+
+def computeEffectiveSampleSize(particle_set):
+    # effective sample size N_eff
+    weight_sq = 0
+    for particle in particle_set:
+        weight_sq += (particle.weight)**2
+
+    N_eff = 1/weight_sq
+
+    return N_eff
 
 def runGMapping():
 
