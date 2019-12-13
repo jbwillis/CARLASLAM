@@ -45,4 +45,9 @@ class Params(SingletonParent):
         alpha_4 = .05
         self.alpha_g = np.array([alpha_3, alpha_4])
 
+        # samples around the most likely scan pose
+        self.sample_K     = 10
+        self.sample_delta = .5
+
+
 global_params = Params()
