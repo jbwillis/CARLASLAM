@@ -2,6 +2,7 @@
 from MotionModel import *
 from map import *
 from VehicleData import *
+from copy import deepcopy
 
 def runStep(particle_set, scan_t, odom_tm1):
 
@@ -93,6 +94,30 @@ def computeEffectiveSampleSize(particle_set):
     N_eff = 1/weight_sq
 
     return N_eff
+
+def resampleParticleSet(particle_set):
+    # low variance sampler
+    # particle set is assumed to already have normalized weights
+
+    new_particle_set = []
+
+    M = len(particle_set) # number of particles
+    r = np.random.rand()/M # uniformly distribute r in (0, 1/M)
+    c = particle_set[0].weight
+    i = 1
+    indx = []
+
+    for m in range(M)
+        U = r + m/M
+        while U > c # accumulate weights
+            i = i + 1
+            c = c + particle_set[i].weight
+
+        # line 12, add x_t[i] to X_bar
+        new_particle_set.append(deepcopy(particle_set[i]))
+        indx.append(i);
+
+    return new_particle_set
 
 def runGMapping():
 
