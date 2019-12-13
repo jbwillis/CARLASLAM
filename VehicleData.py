@@ -93,12 +93,13 @@ class VehicleData:
         pw.addPlot("Positions", self._plotPositionSubplots())
         pw.addPlot("Velocities", self._plotVelocity())
         pw.addPlot("Controls", self._plotControl())
-        pw.addPlot("Lidar", self._plotLidarScan(50))
+
+        scan = thresholdScan(self.lidar_data[10])
+        pw.addPlot("Lidar", self._plotLidarScan(scan))
 
         pw.show()
 
-    def _plotLidarScan(self, scan_n):
-        scan = self.lidar_data[scan_n]
+    def _plotLidarScan(self, scan):
 
         scan = thresholdScan(scan)
         # generate occupancy grid map
