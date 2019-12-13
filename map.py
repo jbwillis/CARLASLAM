@@ -31,22 +31,70 @@ def correlationFit(likelihood_map, scan, motion):
 
     return score
 
-def scanmatch(subliklihoodfield, scan, pose):
+def probScan(scan, map, pose):
+    # get portion of map that surrounds pose
+    submap = map.getSubmap(pose, GP.scan_max_xy)
+
+    field = likelihoodField(submap)
+
+    # get correlationFit in submap
+    log_odds = correlationFit(field, scan, [0., 0., -pose[2]])
+    
+    # convert to probability
+    p = 1 - 1/(1 + np.exp(log_odds))
+
+    return p
+
+
+
+def scanmatch(map, scan, pose):
     # returns the most likely pose that the scan was taken from
-    # searches within
-    pass
+
+    # get portion of map that surrounds pose
+    submap = map.getSubmap(pose, GP.scan_max_xy)
+    field = likelihoodField(submap)
+
+	shift = np.array( [0., 0., -pose[2]])
+    best_fit = correlationFit(likelihood_map, scan, shift)
+	last_improvement = 1
+	xy_incr = 0.01 # m
+	theta_incr = 2 * math.pi / 180.0
+	best_shift = np.copy(shift)
+
+ 
+    while best_fit < 0:
+	
+		dirs = np.array([[xy_incr, 0, 0],
+				[-xy_incr, 0, 0],
+				[0, xy_incr, 0],
+				[0, -xy_incr, 0],
+				[0,0,theta_incr], 
+				[0,0,-theta_incr]])
+
+		fits = []
+		for direction in fits:
+			temp_shift = np.copy(shift)
+			temp_shift += direction
+			fit = correlationFit(likelihood_map, scan,  direction)
+			if fit > best_fit:
+				best_fit = fit
+				best_shift = temp_shift
+				
+		if(shift == best_shift):
+			break
+		else:
+			shift = best_shift
+				
+	return pose + best_shift + np.array([0.0, 0.0, pose[2]])
 
 
 
 def likelihoodField(map):
     # generate a likelihood field of a given map
-    occupied_thresh = 1.0
+    occupied_thresh = 0.0
     occupied = np.copy(map)
-    occupied[occupied < occupied_thresh] = 0.0
-    occupied[occupied >= occupied_thresh] = 1.0
 
     blurred = gaussian_filter(occupied, sigma=GP.sigma_d)
-    blurred[blurred > 1] = 1.0
     return blurred
 
 def integrateScan(map, scan, pose_xy):
@@ -61,8 +109,10 @@ def integrateScan(map, scan, pose_xy):
                                     point_cell.item(0), point_cell.item(1))
 
         map.gridmap[beam_rr, beam_cc] = map.gridmap[beam_rr, beam_cc] + GP.ell_free
-        map.gridmap[point_cell.item(0), point_cell.item(1)] = map.gridmap[
-                                                                    point_cell.item(0), point_cell.item(1)] + GP.ell_occ
+        map.gridmap[point_cell.item(0), point_cell.item(1)] = \
+            map.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
+
+        return map
 
 def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
