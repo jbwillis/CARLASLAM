@@ -36,4 +36,13 @@ class Params(SingletonParent):
         # resolution of all occupancy grid maps
         self.resolution_m = 1
 
+        # Motion model noise
+        alpha_1 = .005
+        alpha_2 = .05
+        self.alpha_v = np.array([alpha_1, alpha_2])
+
+        alpha_3 = .005
+        alpha_4 = .05
+        self.alpha_g = np.array([alpha_3, alpha_4])
+
 global_params = Params()
