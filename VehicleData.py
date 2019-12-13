@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # custom class for keeping track of a vehicle's data
 
 import numpy as np
@@ -95,7 +95,7 @@ class VehicleData:
         pw.addPlot("Controls", self._plotControl())
         pw.addPlot("Lidar", self._plotLidarScan(50))
 
-        # pw.show()
+        pw.show()
 
     def _plotLidarScan(self, scan_n):
         scan = self.lidar_data[scan_n]
