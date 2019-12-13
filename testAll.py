@@ -76,8 +76,8 @@ def testTransformScan(vd):
 
 def testLikelihoodField(pw):
     m = np.zeros([100, 100])
-    m[20:50, 60:95] = 1
-    m[45:70, 5:30] = 1
+    m[20:50, 60:95] = 10
+    m[45:70, 5:30] = 10
     
     f = plt.figure()
     plt.pcolormesh(m)
