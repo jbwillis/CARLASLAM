@@ -7,6 +7,7 @@ from MotionModel import *
 from map import *
 from VehicleData import *
 from copy import deepcopy
+from particle import Particle
 
 def runStep(particle_set, scan_t, odom_tm1):
 
@@ -120,10 +121,10 @@ def resampleParticleSet(particle_set):
 
     return new_particle_set
 
-def intiParticleSet(N_particles):
+def initParticleSet(N_particles):
     particle_set = []
     for i in range(N_particles):
-        particle_set.append([0., 0., 0.], 1., map(1000, [0., 0., 0.]))
+        particle_set.append(Particle(np.array([0., 0., 0.]), 1., Map(1000, np.array([0., 0.]))))
 
     return particle_set
 
@@ -131,10 +132,14 @@ def runGMapping():
 
     vd = loadFromFile("captured_data/route1_vd.npz")
 
-    particle_set = intiParticleSet(GP.N_particles)
+    particle_set = initParticleSet(GP.N_particles)
 
     for scan, vel, steer in zip(vd.lidar_data, vd.velocity_data, vd.steer_data):
-        odom = [vel, steer]
+
+        v = np.linalg.norm(vel[0:2])
+        gamma = np.deg2rad(steer)
+
+        odom = [v, gamma]
         particle_set = runStep(particle_set, scan, odom)
 
     f = plt.figure()

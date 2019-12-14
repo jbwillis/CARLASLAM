@@ -21,7 +21,7 @@ def modelStep(state_km1, odom):
 
     theta_k = wrapToPi(theta_k)
 
-    return [x_k, y_k, theta_k]
+    return np.array([x_k, y_k, theta_k])
 
 def sampleMotionModel(state_km1, odom):
     # generate noisy odometry

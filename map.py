@@ -26,14 +26,14 @@ def correlationFit(likelihood_map, scan, motion):
 
     score = 0
     for beam in scan:
-        point_cell = map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
+        point_cell = likelihood_map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
         score += likelihood_map.gridmap[point_cell]
 
     return score
 
 def probScan(scan, map, pose):
     # get portion of map that surrounds pose
-    submap = map.getSubmap(pose, GP.scan_max_xy)
+    submap = map.getSubmap(pose[:2], GP.scan_max_xy)
 
     field = likelihoodField(submap)
 
@@ -51,41 +51,41 @@ def scanmatch(map, scan, pose):
     # returns the most likely pose that the scan was taken from
 
     # get portion of map that surrounds pose
-    submap = map.getSubmap(pose, GP.scan_max_xy)
-    field = likelihoodField(submap)
+    submap = map.getSubmap(pose[:2], GP.scan_max_xy)
+    likelihood_map = likelihoodField(submap)
 
-	shift = np.array( [0., 0., -pose[2]])
+    shift = np.array( [0., 0., -pose[2]])
     best_fit = correlationFit(likelihood_map, scan, shift)
-	last_improvement = 1
-	xy_incr = 0.01 # m
-	theta_incr = 2 * math.pi / 180.0
-	best_shift = np.copy(shift)
+    last_improvement = 1
+    xy_incr = 0.01 # m
+    theta_incr = 2 * math.pi / 180.0
+    best_shift = np.copy(shift)
 
  
     while best_fit < 0:
-	
-		dirs = np.array([[xy_incr, 0, 0],
-				[-xy_incr, 0, 0],
-				[0, xy_incr, 0],
-				[0, -xy_incr, 0],
-				[0,0,theta_incr], 
-				[0,0,-theta_incr]])
+        
+        dirs = np.array([[xy_incr, 0, 0],
+                        [-xy_incr, 0, 0],
+                        [0, xy_incr, 0],
+                        [0, -xy_incr, 0],
+                        [0,0,theta_incr], 
+                        [0,0,-theta_incr]])
 
-		fits = []
-		for direction in fits:
-			temp_shift = np.copy(shift)
-			temp_shift += direction
-			fit = correlationFit(likelihood_map, scan,  direction)
-			if fit > best_fit:
-				best_fit = fit
-				best_shift = temp_shift
-				
-		if(shift == best_shift):
-			break
-		else:
-			shift = best_shift
-				
-	return pose + best_shift + np.array([0.0, 0.0, pose[2]])
+        fits = []
+        for direction in fits:
+            temp_shift = np.copy(shift)
+            temp_shift += direction
+            fit = correlationFit(likelihood_map, scan,  direction)
+            if fit > best_fit:
+                    best_fit = fit
+                    best_shift = temp_shift
+                        
+        if(shift == best_shift):
+            break
+        else:
+            shift = best_shift
+                    
+    return pose + best_shift + np.array([0.0, 0.0, pose[2]])
 
 
 
