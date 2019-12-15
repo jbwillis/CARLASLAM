@@ -26,7 +26,7 @@ def correlationFit(likelihood_map, scan, motion):
     score = 0
     for beam in scan:
         point_cell = likelihood_map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
-        score += likelihood_map.gridmap[point_cell]
+        score += likelihood_map.gridmap[point_cell.item(0), point_cell.item(1)]
 
     return score
 
@@ -83,7 +83,7 @@ def scanmatch(map, scan, pose):
         else:
             shift = best_shift
                     
-    return pose + best_shift + np.array([0.0, 0.0, pose[2]])
+    return pose + best_shift + np.array([0.0, 0.0, pose[2]]), True # TODO success is always true
 
 def likelihoodField(map):
     # generate a likelihood field of a given map
@@ -141,6 +141,8 @@ class Map:
 
         self.gridmap      = np.ones((n_cells, n_cells))
 
+        self.center_cell = np.array([int(n_cells/2), int(n_cells/2)])
+
     def getSubmap(self, centerpoint, radius):
         # given a centerpoint (in the robot's global coordinates)
         # and a square radius (in meters)
@@ -173,6 +175,11 @@ class Map:
             print("Error: coord_yx is wrong dimension")
             import pdb; pdb.set_trace()
 
+        if np.any(coord_yx < 0):
+            print("Error: coordinates are negative")
+            import pdb; pdb.set_trace()
+
+        coord_yx -= self.center_cell
         coord = coord_yx[::-1] # flip x and y to coorespond to correct global coordinates
         
         coord = coord - self.global_origin
@@ -197,6 +204,11 @@ class Map:
         coord = coord + self.global_origin.astype(np.int)
 
         coord = coord[::-1] # flip x and y to coorespond to correct matrix coordinates
-        
+        coord += self.center_cell
+       
+        if np.any(coord < 0):
+            print("Error: coordinates are negative")
+            import pdb; pdb.set_trace()
+
         return coord
 

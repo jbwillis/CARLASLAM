@@ -11,9 +11,8 @@ from particle import Particle
 
 def runStep(particle_set, scan_t, odom_tm1):
 
-    # convert scan into occupancy grid map
-
-    #gridMapFromScan(scan, radius)
+    # threshold the scan
+    scan_t = thresholdScan(scan_t)
 
     weights_total = 0 # keep track of all weights for normalization
 
@@ -139,7 +138,7 @@ def runGMapping():
         v = np.linalg.norm(vel[0:2])
         gamma = np.deg2rad(steer)
 
-        odom = [v, gamma]
+        odom = np.array([v, gamma])
         particle_set = runStep(particle_set, scan, odom)
 
     f = plt.figure()
