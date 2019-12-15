@@ -49,7 +49,7 @@ class Params(SingletonParent):
 
         # samples around the most likely scan pose
         self.sample_K     = 10
-        self.sample_delta = .5
+        self.sample_delta = .005
 
         # particle set related parameters
         self.N_particles = 25
