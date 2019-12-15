@@ -3,7 +3,6 @@ from params import global_params as GP
 import skimage.draw as skd
 from scipy.ndimage.filters import gaussian_filter
 
-
 def transformScan(scan, motion):
     # motion is array [x,y,theta]
     x,y,theta = motion
@@ -34,31 +33,30 @@ def correlationFit(likelihood_map, scan, motion):
 def probScan(scan, map, pose):
     # get portion of map that surrounds pose
     submap = map.getSubmap(pose[:2], GP.scan_max_xy)
-
-    field = likelihoodField(submap)
+    
+    submap.gridmap = likelihoodField(submap.gridmap)
 
     # get correlationFit in submap
-    log_odds = correlationFit(field, scan, [0., 0., -pose[2]])
+    log_odds = correlationFit(submap, scan, [0., 0., -pose[2]])
     
     # convert to probability
     p = 1 - 1/(1 + np.exp(log_odds))
 
     return p
 
-
-
 def scanmatch(map, scan, pose):
     # returns the most likely pose that the scan was taken from
 
     # get portion of map that surrounds pose
     submap = map.getSubmap(pose[:2], GP.scan_max_xy)
-    likelihood_map = likelihoodField(submap)
+
+    submap.gridmap = likelihoodField(submap.gridmap)
 
     shift = np.array( [0., 0., -pose[2]])
-    best_fit = correlationFit(likelihood_map, scan, shift)
+    best_fit = correlationFit(submap, scan, shift)
     last_improvement = 1
     xy_incr = 0.01 # m
-    theta_incr = 2 * math.pi / 180.0
+    theta_incr = 2 * np.pi / 180.0
     best_shift = np.copy(shift)
 
  
@@ -75,7 +73,7 @@ def scanmatch(map, scan, pose):
         for direction in fits:
             temp_shift = np.copy(shift)
             temp_shift += direction
-            fit = correlationFit(likelihood_map, scan,  direction)
+            fit = correlationFit(submap, scan,  direction)
             if fit > best_fit:
                     best_fit = fit
                     best_shift = temp_shift
@@ -86,8 +84,6 @@ def scanmatch(map, scan, pose):
             shift = best_shift
                     
     return pose + best_shift + np.array([0.0, 0.0, pose[2]])
-
-
 
 def likelihoodField(map):
     # generate a likelihood field of a given map
@@ -156,8 +152,14 @@ class Map:
 
         # get submap
         submap = self.gridmap[bot_left.item(0):top_right.item(0), bot_left.item(1):top_right.item(1)]
+        submap = np.copy(submap)
+
+        n_cells = submap.shape[0]
+
+        submap_map = Map(n_cells, centerpoint)
+        submap_map.gridmap = submap
         
-        return submap
+        return submap_map
         
 
     def _mapIndexToPose(self, coord_yx):
