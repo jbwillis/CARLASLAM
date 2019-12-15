@@ -93,6 +93,20 @@ def testLikelihoodField(pw):
 
     pw.addPlot("blurred", f)
 
+def testIntegrateScan(vd, pw):
+    scan  = vd.lidar_data[10]
+    scan_t = thresholdScan(scan)
+    m_empty = Map(1000, np.array([0., 0.]))
+    m = integrateScan(m_empty, scan_t, np.array([0., 0., 0.]))
+
+    f, ax = plt.subplots()
+    im = ax.pcolormesh(m.gridmap)
+    f.colorbar(im, ax=ax)
+    ax.axis('equal')
+
+    pw.addPlot("Raw scan", vd._plotLidarScan(scan))
+    pw.addPlot("Integrated Scan", f)
+
 if __name__ == '__main__':
       
     vd = loadFromFile("captured_data/route1_vd.npz")
@@ -103,6 +117,7 @@ if __name__ == '__main__':
 
     # Plotting related tests
     pw = plotWindow()
+    testIntegrateScan(vd, pw)
     testTransformScanPlot(pw, vd)
     testSampleMotionModel(pw)
     testProbMotionModel(pw)

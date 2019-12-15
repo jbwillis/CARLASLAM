@@ -35,7 +35,8 @@ def runStep(particle_set, scan_t, odom_tm1):
         else:
 
             # sample around the mode
-            xK = (np.random.rand(GP.sample_K, 3) - .5)*GP.sample_delta + x_t_hat
+            xK = (np.random.rand(GP.sample_K, 3) - .5)*(GP.sample_delta*odom_tm1[0]**2) + x_t_hat
+            
 
             # compute Gaussian proposal
 
@@ -101,6 +102,8 @@ def resampleParticleSet(particle_set):
     # low variance sampler
     # particle set is assumed to already have normalized weights
 
+    print("Resampling")
+
     new_particle_set = []
 
     M = len(particle_set) # number of particles
@@ -134,11 +137,12 @@ def runGMapping():
 
     particle_set = initParticleSet(GP.N_particles)
 
-    N_iter = len(vd.velocity_data)
+    # N_iter = len(vd.velocity_data)
+    N_iter = len(vd.lidar_data)
     for indx in range(N_iter):
         scan  = vd.lidar_data[indx]
-        vel   = vd.velocity_data[indx]
-        steer = vd.steer_data[indx]
+        vel   = vd.velocity_data[2*indx]
+        steer = vd.steer_data[2*indx]
 
         print("Processing {}/{}".format(indx, N_iter))
 

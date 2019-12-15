@@ -111,14 +111,14 @@ def integrateScan(map, scan, pose):
         map.gridmap[point_cell.item(0), point_cell.item(1)] = \
             map.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
 
-        return map
+    return map
 
 def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
     # the map will be n_cells X n_cells and the pose origin is at the center
     n_cells = 2*int(radius/GP.resolution_m)
 
-    ogmap = Map(n_cells, np.array([n_cells/2, n_cells/2]))
+    ogmap = Map(n_cells, np.array([0., 0.]))
     ogmap.gridmap = 0.0*ogmap.gridmap
 
     pose_cell = ogmap._poseToMapIndex(np.array([0, 0]))
@@ -142,7 +142,7 @@ class Map:
         # origin of map with respect to global robot coordinate frame
         self.global_origin  = global_origin # integer
 
-        self.gridmap      = np.ones((n_cells, n_cells))
+        self.gridmap      = np.zeros((n_cells, n_cells))
 
         self.center_cell = np.array([int(n_cells/2), int(n_cells/2)])
 
