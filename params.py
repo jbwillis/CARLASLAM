@@ -21,9 +21,9 @@ class Params(SingletonParent):
         self.wheelbase = 2
 
         # scan thresholding
-        self.scan_max_xy = 80
+        self.scan_max_xy = 80.
         self.scan_min_xy = .1
-        self.scan_max_z  = 1
+        self.scan_max_z  = 1.
         self.scan_min_z  = -1.5
 
         # gaussian blur standard deviation
