@@ -48,6 +48,7 @@ def runStep(particle_set, scan_t, odom_tm1):
                         * probScan(scan_t, particle.map, xK[ii,:]) 
 
             mu  = xK * pK[:,np.newaxis] # multiply each pj by it's respective pj
+            mu  = np.sum(mu, 0)
             eta = np.sum(pK)
 
             mu /= eta
@@ -58,7 +59,7 @@ def runStep(particle_set, scan_t, odom_tm1):
                 xj = xK[ii,:]
                 diff = xj - mu
 
-                Sig += p[ii] * (diff * diff[:,np.newaxis])
+                Sig += pK[ii] * (diff * diff[:,np.newaxis])
 
             Sig /= eta
 
@@ -105,7 +106,7 @@ def resampleParticleSet(particle_set):
     M = len(particle_set) # number of particles
     r = np.random.rand()/M # uniformly distribute r in (0, 1/M)
     c = particle_set[0].weight
-    i = 1
+    i = 0
     indx = []
 
     for m in range(M):
@@ -133,7 +134,13 @@ def runGMapping():
 
     particle_set = initParticleSet(GP.N_particles)
 
-    for scan, vel, steer in zip(vd.lidar_data, vd.velocity_data, vd.steer_data):
+    N_iter = len(vd.velocity_data)
+    for indx in range(N_iter):
+        scan  = vd.lidar_data[indx]
+        vel   = vd.velocity_data[indx]
+        steer = vd.steer_data[indx]
+
+        print("Processing {}/{}".format(indx, N_iter))
 
         v = np.linalg.norm(vel[0:2])
         gamma = np.deg2rad(steer)

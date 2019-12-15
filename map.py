@@ -93,12 +93,15 @@ def likelihoodField(map):
     blurred = gaussian_filter(occupied, sigma=GP.sigma_d)
     return blurred
 
-def integrateScan(map, scan, pose_xy):
+def integrateScan(map, scan, pose):
+    # rotate the scan to align with the pose
+    scan = transformScan(scan, np.array( [0., 0., -pose[2]]))
+
     for beam in scan:
         # convert global coordinates of beampoint to gridmap coordinates
         point_cell = map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
 
-        pose_cell = map._poseToMapIndex(pose_xy)
+        pose_cell = map._poseToMapIndex(pose[:2])
 
         # get cells along line between pose cells and beampoint cells
         beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1),
