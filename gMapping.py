@@ -9,6 +9,19 @@ from VehicleData import *
 from copy import deepcopy
 from particle import Particle
 
+def plotResults(times, belief_states, actual_states):
+    plt.figure()
+    plt.plot(times, actual_states[:, 0], "red", alpha=.5, label="Actual X")
+    plt.plot(times, belief_states[:, 0], "blue", alpha=.5, label="Belief X")
+    plt.legend()
+
+    plt.figure()
+    plt.plot(times, actual_states[:, 1], "red", alpha=.5, label="Actual Y")
+    plt.plot(times, belief_states[:, 1], "blue", alpha=.5, label="Belief Y")
+    plt.legend()
+
+    plt.show()
+
 def runStep(particle_set, scan_t, odom_tm1):
 
     # threshold the scan
@@ -46,12 +59,13 @@ def runStep(particle_set, scan_t, odom_tm1):
 
             for ii in range(GP.sample_K):
                 pK[ii] = probMotionModel(xK[ii,:], particle.pose, odom_tm1) \
-                        * probScan(scan_t, particle.map, xK[ii,:]) 
+                        + probScan(scan_t, particle.map, xK[ii,:])
 
             mu  = xK * pK[:,np.newaxis] # multiply each pj by it's respective pj
             mu  = np.sum(mu, 0)
             eta = np.sum(pK)
 
+            eta = max(1e-5, eta)
             mu /= eta
 
             Sig = np.zeros((3,3))
@@ -138,11 +152,19 @@ def runGMapping():
     particle_set = initParticleSet(GP.N_particles)
 
     # N_iter = len(vd.velocity_data)
+    #N_iter = len(vd.lidar_data)
+
+    actual_positions = []
+    belief_positions = []
+    times = []
+
     N_iter = len(vd.lidar_data)
     for indx in range(N_iter):
         scan  = vd.lidar_data[indx]
         vel   = vd.velocity_data[2*indx]
         steer = vd.steer_data[2*indx]
+        time = vd.time_vec[2*indx]
+        actual_pos = vd.position_truth[2*indx][0:2]
 
         print("Processing {}/{}".format(indx, N_iter))
 
@@ -152,9 +174,20 @@ def runGMapping():
         odom = np.array([v, gamma])
         particle_set = runStep(particle_set, scan, odom)
 
-    f = plt.figure()
-    plt.pcolormesh(particle_set[0].map.gridmap)
-    plt.axis('equal')
+        belief_pos = sum([particle.pose[0:2]*particle.weight for particle in particle_set])
+        print(belief_pos)
+        actual_positions.append(actual_pos)
+        belief_positions.append(belief_pos)
+        times.append(time)
+
+    # f = plt.figure()
+    # plt.pcolormesh(particle_set[0].map.gridmap)
+    # plt.axis('equal')
+    # plt.show()
+    actual_positions = np.array(actual_positions)
+    belief_positions = np.array(belief_positions)
+    times = np.array(times)
+    plotResults(times, belief_positions, actual_positions)
 
     print("Done")
 

@@ -26,7 +26,8 @@ def correlationFit(likelihood_map, scan, motion):
     score = 0
     for beam in scan:
         point_cell = likelihood_map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
-        score += likelihood_map.gridmap[point_cell.item(0), point_cell.item(1)]
+        if point_cell.item(0) < likelihood_map.gridmap.shape[0] and point_cell.item(1) < likelihood_map.gridmap.shape[1]:
+            score += likelihood_map.gridmap[point_cell.item(0), point_cell.item(1)]
 
     return score
 
@@ -38,7 +39,7 @@ def probScan(scan, map, pose):
 
     # get correlationFit in submap
     log_odds = correlationFit(submap, scan, [0., 0., -pose[2]])
-    
+
     # convert to probability
     p = 1 - 1/(1 + np.exp(log_odds))
 
@@ -83,7 +84,7 @@ def scanmatch(map, scan, pose):
         else:
             shift = best_shift
                     
-    print(best_fit)
+    #print(best_fit)
     return pose + best_shift + np.array([0.0, 0.0, pose[2]]), True # TODO success is always true
 
 def likelihoodField(map):
