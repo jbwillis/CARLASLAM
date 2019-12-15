@@ -78,11 +78,12 @@ def scanmatch(map, scan, pose):
                     best_fit = fit
                     best_shift = temp_shift
                         
-        if(shift == best_shift):
+        if(np.allclose(shift, best_shift)):
             break
         else:
             shift = best_shift
                     
+    print(best_fit)
     return pose + best_shift + np.array([0.0, 0.0, pose[2]]), True # TODO success is always true
 
 def likelihoodField(map):
