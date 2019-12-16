@@ -17,16 +17,16 @@ def thresholdScan(scan):
     # threshold scan to only have points in a region near the vehicle
     
     # threshold radius values
-    #scan = scan[scan[:,0]**2 + scan[:,1]**2 < GP.scan_max_xy**2, :]
-    #scan = scan[scan[:,0]**2 + scan[:,1]**2 > GP.scan_min_xy**2, :]
+    scan = scan[scan[:,0]**2 + scan[:,1]**2 < GP.scan_max_xy**2, :]
+    scan = scan[scan[:,0]**2 + scan[:,1]**2 > GP.scan_min_xy**2, :]
 
-    # # threshold x values
-    scan = scan[abs(scan[:,0]) < GP.scan_max_xy, :]
-    scan = scan[abs(scan[:,0]) > GP.scan_min_xy, :]
+    # threshold x values
+    # scan = scan[abs(scan[:,0]) < GP.scan_max_xy, :]
+    # scan = scan[abs(scan[:,0]) > GP.scan_min_xy, :]
 
     # # threshold y values
-    scan = scan[abs(scan[:,1]) < GP.scan_max_xy, :]
-    scan = scan[abs(scan[:,1]) > GP.scan_min_xy, :]
+    # scan = scan[abs(scan[:,1]) < GP.scan_max_xy, :]
+    # scan = scan[abs(scan[:,1]) > GP.scan_min_xy, :]
 
     # threshold z values
     scan = scan[scan[:,2] < GP.scan_max_z, :]
