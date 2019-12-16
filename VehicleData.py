@@ -5,7 +5,7 @@ import numpy as np
 from utils import *
 import map
 
-# from MotionModel import modelStep
+from MotionModel import modelStep
 
 from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
@@ -76,15 +76,27 @@ class VehicleData:
 
         vd_np        = np.array(self.velocity_data)
         steer_ang_np = np.array(self.steer_data)
+        gamma_prev = 0
+        alpha = .5
 
         for indx in range(0, len(self.time_vec)):
 
             v = np.linalg.norm(vd_np[indx, 0:2])
             gamma = np.deg2rad(steer_ang_np[indx])
 
-            state_k = state_km1 # modelStep(state_km1, [v, gamma])
+            if (gamma - gamma_prev) > np.pi/8:
+                gamma = gamma_prev + np.pi/8
+            elif (gamma - gamma_prev) < -np.pi/8:
+                gamma = gamma_prev - np.pi/8
+
+            gamma = alpha*gamma + (1 - alpha)*gamma_prev
+
+
+            state_k = modelStep(state_km1, [v, gamma])
             self.odom_state.append(np.array(state_k))
             state_km1 = state_k
+
+            gamma_prev = gamma
 
     def plot(self):
         pw = plotWindow()
