@@ -96,24 +96,31 @@ def likelihoodField(map):
     return blurred
 
 def integrateScan(map, scan, pose):
-    # rotate the scan to align with the pose
-    scan = transformScan(scan, np.array( [0., 0., -pose[2]]))
+    # transform the scan to align with the pose
+    scan = transformScan(scan, np.array([0., 0., -pose[2]]))
+    # scan = transformScan(scan, np.array([pose[0], 0., 0.]))
+    # scan = transformScan(scan, np.array([0., pose[1], 0.]))
+    scan[:,0] += pose[0]
+    scan[:,1] -= pose[1]
 
+    pose_cell = map._poseToMapIndex(pose[:2])
     for beam in scan:
         # convert global coordinates of beampoint to gridmap coordinates
         point_cell = map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
 
-        pose_cell = map._poseToMapIndex(pose[:2])
-
         # get cells along line between pose cells and beampoint cells
         beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1),
                                     point_cell.item(0), point_cell.item(1))
+        
+        # remove point_cell from line
+        beam_rr = beam_rr[:-1] 
+        beam_cc = beam_cc[:-1]
 
         map.gridmap[beam_rr, beam_cc] = map.gridmap[beam_rr, beam_cc] + GP.ell_free
         map.gridmap[point_cell.item(0), point_cell.item(1)] = \
             map.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
 
-    return map
+    return map, pose_cell
 
 def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
@@ -206,7 +213,6 @@ class Map:
         
         coord = (pose_xy/GP.resolution_m)
         coord = coord.astype(np.int)
-        coord = coord + self.global_origin.astype(np.int)
 
         coord = coord[::-1] # flip x and y to coorespond to correct matrix coordinates
         coord += self.center_cell
