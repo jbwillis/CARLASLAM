@@ -167,11 +167,14 @@ def runGMapping():
     belief_positions = []
     times = []
 
+    gamma_prev = 0
+    alpha = .5
+
     N_iter = len(vd.lidar_data)
     for indx in range(20, 50):
         scan  = vd.lidar_data[indx]
         vel   = vd.velocity_data[indx]
-        steer = -10. #vd.steer_data[indx]
+        steer = vd.steer_data[indx]
         time = vd.time_vec[indx]
         actual_pos = vd.position_truth[indx][0:2]
         actual_head = vd.heading_truth[indx]
@@ -182,6 +185,14 @@ def runGMapping():
 
         v = np.linalg.norm(vel[0:2])
         gamma = np.deg2rad(steer)
+
+        ## filter gamma
+        if (gamma - gamma_prev) > np.pi/8:
+            gamma = gamma_prev + np.pi/8
+        elif (gamma - gamma_prev) < -np.pi/8:
+            gamma = gamma_prev - np.pi/8
+
+        gamma = alpha*gamma + (1 - alpha)*gamma_prev
 
         odom = np.array([v, gamma])
         particle_set = runStep(particle_set, scan, odom)
