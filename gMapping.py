@@ -20,6 +20,11 @@ def plotResults(times, belief_states, actual_states):
     plt.plot(times, belief_states[:, 1], "blue", alpha=.5, label="Belief Y")
     plt.legend()
 
+    plt.figure()
+    plt.plot(times, actual_states[:, 2], "red", alpha=.5, label="Actual theta")
+    plt.plot(times, belief_states[:, 2], "blue", alpha=.5, label="Belief theta")
+    plt.legend()
+
     plt.show()
 
 def runStep(particle_set, scan_t, odom_tm1):
@@ -39,8 +44,11 @@ def runStep(particle_set, scan_t, odom_tm1):
         #################################
         # scan matching
         x_t_pr  = modelStep(particle.pose, odom_tm1) # propagate the particle's state forward
-        x_t_hat, success = scanmatch(particle.map, scan_t, x_t_pr)
+        # x_t_hat, success = scanmatch(particle.map, scan_t, x_t_pr)
+        x_t_hat = x_t_pr
+        success = True
 
+        
         if not success:
             # scanmatch didn't find an alignment in the map
             particle.pose = sampleMotionModel(particle.pose, odom_tm1)
@@ -58,8 +66,8 @@ def runStep(particle_set, scan_t, odom_tm1):
             pK = np.zeros(GP.sample_K)
 
             for ii in range(GP.sample_K):
-                pK[ii] = probMotionModel(xK[ii,:], particle.pose, odom_tm1) \
-                        + probScan(scan_t, particle.map, xK[ii,:])
+                pK[ii] = probMotionModel(xK[ii,:], particle.pose, odom_tm1) #\
+                        # + probScan(scan_t, particle.map, xK[ii,:])
 
             mu  = xK * pK[:,np.newaxis] # multiply each pj by it's respective pj
             mu  = np.sum(mu, 0)
@@ -97,8 +105,8 @@ def runStep(particle_set, scan_t, odom_tm1):
     # determine if particles should be resampled
     N_eff = computeEffectiveSampleSize(particle_set)
 
-    if N_eff < GP.resample_threshold:
-        particle_set = resampleParticleSet(particle_set)
+    # if N_eff < GP.resample_threshold:
+        # particle_set = resampleParticleSet(particle_set)
 
     return particle_set
 
@@ -138,10 +146,10 @@ def resampleParticleSet(particle_set):
 
     return new_particle_set
 
-def initParticleSet(N_particles):
+def initParticleSet(N_particles, pose0):
     particle_set = []
     for i in range(N_particles):
-        particle_set.append(Particle(np.array([0., 0., 0.]), 1., Map(1000, np.array([0., 0.]))))
+        particle_set.append(Particle(pose0, 1., Map(1000, np.array([0., 0.]))))
 
     return particle_set
 
@@ -149,7 +157,8 @@ def runGMapping():
 
     vd = loadFromFile("captured_data/route1_vd.npz")
 
-    particle_set = initParticleSet(GP.N_particles)
+    heading_truth_0 = vd.heading_truth[0]
+    particle_set = initParticleSet(GP.N_particles, np.array([0., 0., heading_truth_0]))
 
     # N_iter = len(vd.velocity_data)
     #N_iter = len(vd.lidar_data)
@@ -159,12 +168,15 @@ def runGMapping():
     times = []
 
     N_iter = len(vd.lidar_data)
-    for indx in range(N_iter):
+    for indx in range(20, 50):
         scan  = vd.lidar_data[indx]
-        vel   = vd.velocity_data[2*indx]
-        steer = vd.steer_data[2*indx]
-        time = vd.time_vec[2*indx]
-        actual_pos = vd.position_truth[2*indx][0:2]
+        vel   = vd.velocity_data[indx]
+        steer = -10. #vd.steer_data[indx]
+        time = vd.time_vec[indx]
+        actual_pos = vd.position_truth[indx][0:2]
+        actual_head = vd.heading_truth[indx]
+
+        actual_pos = np.concatenate([actual_pos, np.array([actual_head])])
 
         print("Processing {}/{}".format(indx, N_iter))
 
@@ -174,8 +186,9 @@ def runGMapping():
         odom = np.array([v, gamma])
         particle_set = runStep(particle_set, scan, odom)
 
-        belief_pos = sum([particle.pose[0:2]*particle.weight for particle in particle_set])
-        print(belief_pos)
+        belief_pos = sum([particle.pose[0:3]*particle.weight for particle in particle_set])
+        print("belief = ", belief_pos)
+        print("actual = ", actual_pos)
         actual_positions.append(actual_pos)
         belief_positions.append(belief_pos)
         times.append(time)
