@@ -87,11 +87,11 @@ def runGMapping():
         pos_cells.append(pose_cell)
         print("pos_cell = ", pose_cell)
     
-        plotMap(ogmap, pos_cells)
-        plt.savefig("ogmap/ogmap_{}.png".format(indx))
+        # plotMap(ogmap, pos_cells)
+        # plt.savefig("ogmap/ogmap_{}.png".format(indx))
 
-    # plotMap(ogmap, pos_cells)
-    # plt.show()
+    plotMap(ogmap, pos_cells)
+    plt.show()
 
     actual_positions = np.array(actual_positions)
     times = np.array(times)

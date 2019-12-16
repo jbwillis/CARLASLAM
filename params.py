@@ -30,9 +30,9 @@ class Params(SingletonParent):
         self.sigma_d = 2
 
         # Occupancy grid log-odds
-        p_occ    = .7
+        p_occ    = .8
         self.ell_occ  = np.log(p_occ/(1-p_occ))
-        p_free   = .3
+        p_free   = .45
         self.ell_free = np.log(p_free/(1-p_free))
 
         # resolution of all occupancy grid maps
