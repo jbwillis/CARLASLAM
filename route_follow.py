@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Modified from examples/tutorial.py
 # Jacob Willis, 2019
@@ -92,7 +92,7 @@ def main():
 
         settings = world.get_settings()
         settings.synchronous_mode = True
-        settings.fixed_delta_seconds = 0.05
+        settings.fixed_delta_seconds = 0.1
         world.apply_settings(settings)
 
         spectator = world.get_spectator() # the spectator is the view of the simulator window
