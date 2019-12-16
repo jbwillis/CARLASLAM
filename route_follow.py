@@ -60,6 +60,7 @@ ROUTE = routes[args.route-1]
 
 def handle_lidar(data):
     point_cloud = np.frombuffer(data.raw_data, dtype=np.float32).reshape([-1, 3])
+    point_cloud = np.copy(point_cloud)
     return point_cloud
 
 
@@ -69,7 +70,8 @@ def add_lidar_sensor(world, vehicle, vd):
     blueprint.set_attribute('range', '5000')
 
     # Set the time in seconds between sensor captures
-    blueprint.set_attribute('sensor_tick', '0.1')
+    blueprint.set_attribute('sensor_tick', '0.05')
+    blueprint.set_attribute('rotation_frequency', '20.0')
     # Provide the position of the sensor relative to the vehicle.
     transform = carla.Transform(carla.Location(x=0.0, z=2.3))
     # Tell the world to spawn the sensor, don't forget to attach it to your vehicle actor.
@@ -92,7 +94,7 @@ def main():
 
         settings = world.get_settings()
         settings.synchronous_mode = True
-        settings.fixed_delta_seconds = 0.1
+        settings.fixed_delta_seconds = 0.05
         world.apply_settings(settings)
 
         spectator = world.get_spectator() # the spectator is the view of the simulator window
