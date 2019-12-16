@@ -107,6 +107,20 @@ def testIntegrateScan(vd, pw):
     pw.addPlot("Raw scan", vd._plotLidarScan(scan))
     pw.addPlot("Integrated Scan", f)
 
+def testScanMatching(pw):
+    testScan = np.array([ [10., 5., 0.], 
+                          [10., 6., 0.], 
+                          [10., 7., 0.], 
+                          [10., 8., 0.],  
+                          [10., 9., 0.],
+                          [10., 10., 0.],
+                          [5., 10., 0.], 
+                          [6., 10., 0.], 
+                          [7., 10., 0.], 
+                          [8., 10., 0.], 
+                          [9., 10., 0.]])
+
+
 if __name__ == '__main__':
       
     vd = loadFromFile("captured_data/route1_vd.npz")
