@@ -11,14 +11,47 @@ from utils import *
 from plotWindow.plotWindow import plotWindow
 from MotionModel import *
 
-def testTransformScanPlot(pw, vd): 
-    scan = thresholdScan(vd.lidar_data[10])
-    scanR1 = map.transformScan(scan, [0, 0, np.pi/4])
-    scanR2 = map.transformScan(scan, [0, 0, -np.pi/2])
+def testScanSteps(vd): 
 
-    pw.addPlot("Lidar", vd._plotLidarScan(scan))
-    pw.addPlot("Lidar + pi/4", vd._plotLidarScan(scanR1))
-    pw.addPlot("Lidar - pi/2", vd._plotLidarScan(scanR2))
+    print(vd.lidar_data.shape)
+    # for i in range(len(vd.lidar_data)):
+    i = 10
+    scan = (vd.lidar_data[i])
+    scan_t = thresholdScan(scan)
+    pos = vd.position_truth[i]
+    head = vd.heading_truth[i]
+
+    f, ax = plt.subplots()
+    im = ax.scatter(scan[:,0], scan[:,1])
+    ax.axis('equal')
+
+    ax.set_xlim([-80, 80])
+    ax.set_ylim([-80, 80])
+
+    f, ax = plt.subplots()
+    im = ax.scatter(scan_t[:,0], scan_t[:,1])
+    ax.axis('equal')
+
+    ax.set_xlim([-80, 80])
+    ax.set_ylim([-80, 80])
+    plt.show()
+
+        # plt.savefig("scancopy/scan_{}.png".format(i))
+
+def testTransformScanPlot(pw, vd): 
+    scan = thresholdScan(vd.lidar_data[50])
+    pos = vd.position_truth[50]
+    head = vd.heading_truth[50]
+
+    scanR1 = map.transformScan(scan, [pos.item(0), pos.item(1), 0])
+
+    scanR2 = map.transformScan(scan, [0, 0, head.item(0)])
+    scanR3 = map.transformScan(scan, [0, 0, -head.item(0)])
+
+    pw.addPlot("Original", vd._plotLidarScan(scan))
+    pw.addPlot("Translate", vd._plotLidarScan(scanR1))
+    pw.addPlot("rotate +", vd._plotLidarScan(scanR2))
+    pw.addPlot("rotate -", vd._plotLidarScan(scanR3))
 
 def testSampleMotionModel(pw):
     # generate 250 random samples for different values of 
@@ -130,11 +163,13 @@ if __name__ == '__main__':
     testTransformScan(vd)
 
     # Plotting related tests
-    pw = plotWindow()
-    testIntegrateScan(vd, pw)
-    testTransformScanPlot(pw, vd)
-    testSampleMotionModel(pw)
-    testProbMotionModel(pw)
-    testLikelihoodField(pw)
+    # pw = plotWindow()
+    testScanSteps(vd)
 
-    pw.show()
+    # testIntegrateScan(vd, pw)
+    # testTransformScanPlot(pw, vd)
+    # testSampleMotionModel(pw)
+    # testProbMotionModel(pw)
+    # testLikelihoodField(pw)
+
+    # pw.show()
