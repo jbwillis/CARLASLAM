@@ -5,7 +5,7 @@ import numpy as np
 from utils import *
 import map
 
-from MotionModel import modelStep
+# from MotionModel import modelStep
 
 from plotWindow.plotWindow import plotWindow
 import matplotlib.pyplot as plt
@@ -72,31 +72,32 @@ class VehicleData:
     def runMotionModelFull(self):
         # run the motion model using already saved data and save off data for plotting
         
-        state_km1 = [0, 0, self.heading_truth[0]]
+        pass
+        # state_km1 = [0, 0, self.heading_truth[0]]
 
-        vd_np        = np.array(self.velocity_data)
-        steer_ang_np = np.array(self.steer_data)
-        gamma_prev = 0
-        alpha = .5
+        # vd_np        = np.array(self.velocity_data)
+        # steer_ang_np = np.array(self.steer_data)
+        # gamma_prev = 0
+        # alpha = .5
 
-        for indx in range(0, len(self.time_vec)):
+        # for indx in range(0, len(self.time_vec)):
 
-            v = np.linalg.norm(vd_np[indx, 0:2])
-            gamma = np.deg2rad(steer_ang_np[indx])
+            # v = np.linalg.norm(vd_np[indx, 0:2])
+            # gamma = np.deg2rad(steer_ang_np[indx])
 
-            if (gamma - gamma_prev) > np.pi/8:
-                gamma = gamma_prev + np.pi/8
-            elif (gamma - gamma_prev) < -np.pi/8:
-                gamma = gamma_prev - np.pi/8
+            # if (gamma - gamma_prev) > np.pi/8:
+                # gamma = gamma_prev + np.pi/8
+            # elif (gamma - gamma_prev) < -np.pi/8:
+                # gamma = gamma_prev - np.pi/8
 
-            gamma = alpha*gamma + (1 - alpha)*gamma_prev
+            # gamma = alpha*gamma + (1 - alpha)*gamma_prev
 
 
-            state_k = modelStep(state_km1, [v, gamma])
-            self.odom_state.append(np.array(state_k))
-            state_km1 = state_k
+            # state_k = modelStep(state_km1, [v, gamma])
+            # self.odom_state.append(np.array(state_k))
+            # state_km1 = state_k
 
-            gamma_prev = gamma
+            # gamma_prev = gamma
 
     def plot(self):
         pw = plotWindow()
@@ -152,7 +153,7 @@ class VehicleData:
         if len(self.odom_state) > 0:
             odom_np = np.array(self.odom_state)
         else:
-            odom_np = np.NaN*np.ones(t.shape[0], 3)
+            odom_np = np.NaN*np.ones((len(self.time_vec), 3))
 
         f = plt.figure()
         spx = f.add_subplot(4,1,1)
@@ -183,7 +184,7 @@ class VehicleData:
         if len(self.odom_state) > 0:
             odom_np = np.array(self.odom_state)
         else:
-            odom_np = np.NaN*np.ones(t.shape[0], 3)
+            odom_np = np.NaN*np.ones((len(self.time_vec), 3))
 
         f = plt.figure()
         sp = f.add_subplot(1,1,1)
