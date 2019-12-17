@@ -3,7 +3,7 @@
 
 import numpy as np
 from utils import *
-import map
+# import map
 
 # from MotionModel import modelStep
 
@@ -108,7 +108,7 @@ class VehicleData:
         pw.addPlot("Controls", self._plotControl())
 
         scan = thresholdScan(self.lidar_data[10])
-        pw.addPlot("Lidar", self._plotLidarScan(scan))
+        # pw.addPlot("Lidar", self._plotLidarScan(scan))
 
         pw.show()
 
@@ -209,13 +209,13 @@ class VehicleData:
 
         f = plt.figure()
         spt = f.add_subplot(2,1,1)
-        spt.plot(t, throt_np)
-        spt.legend("Throttle")
+        spt.plot(t, throt_np, label="Throttle")
+        spt.legend(loc=1)
 
         sps = f.add_subplot(2,1,2)
-        sps.plot(t, steer_ang_np)
+        sps.plot(t, steer_ang_np, label="Steering Angle")
         sps.set_ylabel("degrees")
-        sps.legend("Steering Angle")
+        sps.legend(loc=1)
 
         return f
 
