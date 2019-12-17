@@ -100,8 +100,9 @@ def integrateScan(map, scan, pose):
     scan = transformScan(scan, np.array([0., 0., -pose[2]]))
     # scan = transformScan(scan, np.array([pose[0], 0., 0.]))
     # scan = transformScan(scan, np.array([0., pose[1], 0.]))
+    pose[1] = -pose[1]
     scan[:,0] += pose[0]
-    scan[:,1] -= pose[1]
+    scan[:,1] += pose[1]
 
     pose_cell = map._poseToMapIndex(pose[:2])
     for beam in scan:
@@ -112,13 +113,16 @@ def integrateScan(map, scan, pose):
         beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1),
                                     point_cell.item(0), point_cell.item(1))
         
-        # remove point_cell from line
-        beam_rr = beam_rr[:-1] 
-        beam_cc = beam_cc[:-1]
+        if beam.item(2) < GP.scan_low_z: 
+            # this point cooresponds to an obstacle, if z>low_z, it corresponds to a point on the ground
+            # remove point_cell from line
+            beam_rr = beam_rr[:-1] 
+            beam_cc = beam_cc[:-1]
+            # set point cell to occupied
+            map.gridmap[point_cell.item(0), point_cell.item(1)] = \
+                map.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
 
         map.gridmap[beam_rr, beam_cc] = map.gridmap[beam_rr, beam_cc] + GP.ell_free
-        map.gridmap[point_cell.item(0), point_cell.item(1)] = \
-            map.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
 
     return map, pose_cell
 
