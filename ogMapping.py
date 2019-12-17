@@ -28,24 +28,25 @@ def plotResults(times, belief_states, actual_states):
     plt.show()
 
 def plotMap(m, pos_cells):
-    f, ax = plt.subplots()
+    f, ax = plt.subplots(num=0)
     pos_cells_np = np.array([pos_cells]).T
 
     # convert log-odds to probability
     pm = 1 - 1/(1 + np.exp(m.gridmap))
 
-    im = ax.pcolormesh(pm)
+    im = ax.pcolormesh((pm.T)[:, ::-1])
+    # im = ax.pcolormesh(pm)
     ax.axis('equal')
     f.colorbar(im, ax=ax)
-    ax.plot(pos_cells_np[1,:], pos_cells_np[0,:], linewidth=3, c='r')
+    ax.plot(pos_cells_np[0,:], pos_cells_np[1,:], linewidth=1, c='r')
     
     # ax.axvline(x=m.center_cell[0], color='r')
     # ax.axhline(y=m.center_cell[1], color='r')
 
 
-def runGMapping():
+def runGMapping(fname):
 
-    vd = loadFromFile("captured_data/route1_vd.npz")
+    vd = loadFromFile(fname)
 
     actual_positions = []
     pos_cells = []
@@ -61,8 +62,8 @@ def runGMapping():
     N_iter = len(vd.lidar_data) -1
     print(N_iter)
     # for indx in range(0, 10, 5):
-    for indx in range(50, N_iter):
-    # for indx in [0, 25, 50, 75, 100]:
+    for indx in range(0, N_iter):
+    # for indx in range(0, N_iter, 25):
         scan  = vd.lidar_data[indx]
         time = vd.time_vec[indx]
         actual_pos = vd.position_truth[indx][0:2]
@@ -88,11 +89,13 @@ def runGMapping():
         print("pos_cell = ", pose_cell)
     
         # plotMap(ogmap, pos_cells)
-        # plt.savefig("ogmap/ogmap_{}.png".format(indx))
+        # plt.savefig("ogmap/ogmap_{}.png".format(indx), dpi=100)
+        # plt.show()
+        # plt.close()
 
     plotMap(ogmap, pos_cells)
     plt.show()
-
+    
     actual_positions = np.array(actual_positions)
     times = np.array(times)
     # plotResults(times, belief_positions, actual_positions)
@@ -100,4 +103,9 @@ def runGMapping():
     print("Done")
 
 if __name__ == '__main__':
-    runGMapping()
+    import sys
+    if len(sys.argv) > 1:
+        fname = sys.argv[1]
+        runGMapping(fname)
+    else:
+        print('Please specify a filename')
