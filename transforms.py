@@ -17,6 +17,7 @@ def lidar2Body(points):
 def body2Vehicle(points, theta):
     # points - 3xN vector [x_B, y_B, z_B].T
     # theta - angle from vehicle frame to body frame (heading/yaw)
+    print(theta)
     points = np.copy(points)
     c_th = np.cos(theta)
     s_th = np.sin(theta)

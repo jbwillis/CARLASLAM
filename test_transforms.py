@@ -19,34 +19,13 @@ def testAll(i):
 
     # extract data from file
     scan0 = vd.lidar_data[i]
-    xy0 = vd.position_truth[i,:]
+    xyz0 = vd.position_truth[i,:]
     head0 = vd.heading_truth[i]
-    pose0 = np.concatenate([xy0, np.array([head0])])
-
-    # threshold the scan
-    scan_th = utils.thresholdScan(scan0)
-
-    # plot the thresholded scan in 3D
-    f = plt.figure()
-    ax = f.add_subplot(111, projection='3d')
-    ax.scatter(scan_th[:,0], scan_th[:,1], scan_th[:,2])
-    ax.set_xlabel('x_L')
-    ax.set_ylabel('y_L')
-    f.suptitle('3D Plot of Thresholded Scan')
-    pw.addPlot('3D Scan F_L', f)
-
-    # plot the thresholded scan in 2D
-    f, ax = plt.subplots()
-    ax.scatter(scan_th[:,0], scan_th[:,1], c=scan_th[:,2])
-    ax.set_xlabel('x_L')
-    ax.set_ylabel('y_L')
-    ax.set_xlim([-60, 60])
-    ax.set_ylim([-60, 60])
-    f.suptitle('2D Plot of Thresholded Scan')
-    pw.addPlot('2D Scan F_L', f)
+    pose0 = np.concatenate([xyz0[:2], np.array([head0])])
+    print(pose0)
 
     # >>>> transform the scan to the body frame
-    scan_bd = tfm.lidar2Body(scan_th.T)
+    scan_bd = tfm.lidar2Body(scan0.T)
 
     # plot the transformed scan in 3D
     f = plt.figure()
@@ -68,8 +47,31 @@ def testAll(i):
     f.suptitle('2D Plot of Body-Frame Scan')
     pw.addPlot('2D Scan F_B', f)
 
-    # >>>> transform the body frame scan to the vehicle frame
-    scan_vh = tfm.body2Vehicle(scan_bd, pose0[3])
+    # threshold the scan
+    scan_th = utils.thresholdScan(scan_bd.T)
+
+    # plot the thresholded scan in 3D
+    f = plt.figure()
+    ax = f.add_subplot(111, projection='3d')
+    ax.scatter(scan_th[:,0], scan_th[:,1], scan_th[:,2])
+    ax.set_xlabel('x_L')
+    ax.set_ylabel('y_L')
+    f.suptitle('3D Plot of Thresholded Scan')
+    pw.addPlot('3D Scan F_L', f)
+
+    # plot the thresholded scan in 2D
+    f, ax = plt.subplots()
+    ax.scatter(scan_th[:,0], scan_th[:,1], c=scan_th[:,2])
+    ax.set_xlabel('x_L')
+    ax.set_ylabel('y_L')
+    ax.set_xlim([-60, 60])
+    ax.set_ylim([-60, 60])
+    f.suptitle('2D Plot of Thresholded Scan')
+    pw.addPlot('2D Scan F_L', f)
+
+
+    # >>>> transform the thresholded body frame scan to the vehicle frame
+    scan_vh = tfm.body2Vehicle(scan_th.T, pose0[2])
 
     # plot the transformed scan in 3D
     f = plt.figure()
@@ -92,7 +94,7 @@ def testAll(i):
     pw.addPlot('2D Scan F_V', f)
 
     # >>>> transform the vehicle frame scan to the global frame
-    scan_gl = tfm.vehicle2Global(scan_vh, pose0)
+    scan_gl = tfm.vehicle2Global(scan_vh, pose0[:2])
 
     # plot the transformed scan in 3D
     f = plt.figure()
@@ -122,12 +124,12 @@ def testAll(i):
     
     # >>>> transform the global frame scan to map indices
     scan_id = tfm.global2Map(scan_gl, map_offset, map_dim, map_res)
-    pose_id = tfm.global2Map(pose0[:,np.newaxis], map_offset, map_dim, map_res) #+ map_res/2
+    pose_id = tfm.global2Map(pose0[:2,np.newaxis], map_offset, map_dim, map_res) #+ map_res/2
 
     # plot
     mp[scan_id[0,:], scan_id[1,:]] = 1
     f, ax = plt.subplots()
-    im = ax.pcolormesh(mp)
+    im = ax.pcolormesh(mp.T) # transpose since pcolormesh plots columns (second index) along horizontal
     ax.scatter(pose_id.item(0), pose_id.item(1))
     ax.set_xlabel('y_G (x_M)')
     ax.set_ylabel('x_G (y_M)')

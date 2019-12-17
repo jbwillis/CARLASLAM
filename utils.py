@@ -31,8 +31,8 @@ def thresholdScan(scan):
     # threshold z values
     # note that +z is down
     scan = scan[scan[:,2] < GP.scan_max_z, :]
-    scan = scan[np.logical_or(scan[:,2] < GP.scan_low_z, scan[:,0]**2 + scan[:,1]**2 > GP.scan_low_z_min_xy**2), :]
     scan = scan[scan[:,2] > GP.scan_min_z, :]
+    scan = scan[np.logical_or(scan[:,2] > GP.scan_low_z, scan[:,0]**2 + scan[:,1]**2 > GP.scan_low_z_min_xy**2), :]
 
     return scan
 
