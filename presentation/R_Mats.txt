@@ -1,0 +1,3 @@
+R_L^B &= \begin{bmatrix} 0 & -1 & 0 \\ -1 & 0 & 0 \\ 0 & 0 & -1 \end{bmatrix} \\
+R_B^V &= \begin{bmatrix} \cos \theta & -\sin \theta & 0 \\ \sin \theta & \cos \theta & 0 \\ 0 & 0 & 1 \end{bmatrix} \\
+I_M = \mathrm{floor} \begin{pmatrix} y_G \\ x_G \end{pmatrix} + \begin{pmatrix} \Delta_y \\ \Delta_x \end{pmatrix}
