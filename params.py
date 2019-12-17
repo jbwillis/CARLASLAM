@@ -22,9 +22,11 @@ class Params(SingletonParent):
 
         # scan thresholding
         self.scan_max_xy = 80.
-        self.scan_min_xy = .1
-        self.scan_max_z  = 1.
-        self.scan_min_z  = -1.5
+        self.scan_min_xy = 1.
+        self.scan_max_z  = 2.5
+        self.scan_low_z  = 2.0
+        self.scan_min_z  = -.5
+        self.scan_low_z_min_xy = 30.
 
         # gaussian blur standard deviation
         self.sigma_d = 2
@@ -32,7 +34,7 @@ class Params(SingletonParent):
         # Occupancy grid log-odds
         p_occ    = .8
         self.ell_occ  = np.log(p_occ/(1-p_occ))
-        p_free   = .45
+        p_free   = .49
         self.ell_free = np.log(p_free/(1-p_free))
 
         # resolution of all occupancy grid maps
