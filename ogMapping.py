@@ -66,10 +66,10 @@ def runGMapping(fname):
         actual_positions.append(pose_t)
         times.append(time)
         pos_cells.append(pose_cell)
-        print("pos_cell = ", pose_cell)
+        print("pos_cell = ", pose_cell.T)
     
         plotMap(ogmap, pos_cells)
-        plt.savefig("ogmap/ogmap_{}.png".format(indx), dpi=100)
+        plt.savefig("ogmap/ogmap_{}.png".format(indx), dpi=600)
         # plt.show()
         plt.close()
 
