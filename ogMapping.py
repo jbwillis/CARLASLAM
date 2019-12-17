@@ -9,33 +9,14 @@ from VehicleData import *
 from copy import deepcopy
 from particle import Particle
 
-def plotResults(times, belief_states, actual_states):
-    plt.figure()
-    plt.plot(times, actual_states[:, 0], "red", alpha=.5, label="Actual X")
-    plt.plot(times, belief_states[:, 0], "blue", alpha=.5, label="Belief X")
-    plt.legend()
-
-    plt.figure()
-    plt.plot(times, actual_states[:, 1], "red", alpha=.5, label="Actual Y")
-    plt.plot(times, belief_states[:, 1], "blue", alpha=.5, label="Belief Y")
-    plt.legend()
-
-    plt.figure()
-    plt.plot(times, actual_states[:, 2], "red", alpha=.5, label="Actual theta")
-    plt.plot(times, belief_states[:, 2], "blue", alpha=.5, label="Belief theta")
-    plt.legend()
-
-    plt.show()
-
 def plotMap(m, pos_cells):
     f, ax = plt.subplots(num=0)
-    pos_cells_np = np.array([pos_cells]).T
+    pos_cells_np = np.column_stack(pos_cells)
 
     # convert log-odds to probability
     pm = 1 - 1/(1 + np.exp(m.gridmap))
 
-    im = ax.pcolormesh((pm.T)[:, ::-1])
-    # im = ax.pcolormesh(pm)
+    im = ax.pcolormesh(pm.T)
     ax.axis('equal')
     f.colorbar(im, ax=ax)
     ax.plot(pos_cells_np[0,:], pos_cells_np[1,:], linewidth=1, c='r')
@@ -57,7 +38,7 @@ def runGMapping(fname):
     
     n_cells = int(2*(max_xy + GP.scan_max_xy + 1)/GP.resolution_m)
     # create map
-    ogmap = Map(n_cells, np.array([0., 0.]))
+    ogmap = Map(n_cells/2, n_cells, GP.resolution_m)
 
     N_iter = len(vd.lidar_data) -1
     print(N_iter)
@@ -72,15 +53,14 @@ def runGMapping(fname):
 
         print("Processing {}/{}".format(indx, N_iter))
 
-        # transform scan into vehicle frame
-        scan = np.column_stack([-scan[:,1], -scan[:,0], scan[:,2]])
+        # >>>> transform the scan to the body frame
+        scan_bd = tfm.lidar2Body(scan.T)
 
         # threshold the scan
-        scan_t = thresholdScan(scan)
+        scan_th = thresholdScan(scan_bd.T)
 
-        # ogmap = Map(n_cells, np.array([0., 0.]))
         # integrate the scan into the map
-        ogmap, pose_cell = integrateScan(ogmap, scan_t, pose_t)
+        ogmap, pose_cell = integrateScan(ogmap, scan_th.T, pose_t)
         
         print("actual = ", pose_t)
         actual_positions.append(pose_t)
@@ -88,17 +68,13 @@ def runGMapping(fname):
         pos_cells.append(pose_cell)
         print("pos_cell = ", pose_cell)
     
-        # plotMap(ogmap, pos_cells)
-        # plt.savefig("ogmap/ogmap_{}.png".format(indx), dpi=100)
+        plotMap(ogmap, pos_cells)
+        plt.savefig("ogmap/ogmap_{}.png".format(indx), dpi=100)
         # plt.show()
-        # plt.close()
+        plt.close()
 
     plotMap(ogmap, pos_cells)
     plt.show()
-    
-    actual_positions = np.array(actual_positions)
-    times = np.array(times)
-    # plotResults(times, belief_positions, actual_positions)
 
     print("Done")
 

@@ -2,6 +2,7 @@ import numpy as np
 from params import global_params as GP
 import skimage.draw as skd
 from scipy.ndimage.filters import gaussian_filter
+import transforms as tfm
 
 def transformScan(scan, motion):
     # motion is array [x,y,theta]
@@ -95,36 +96,36 @@ def likelihoodField(map):
     blurred = gaussian_filter(occupied, sigma=GP.sigma_d)
     return blurred
 
-def integrateScan(map, scan, pose):
-    # transform the scan to align with the pose
-    scan = transformScan(scan, np.array([0., 0., -pose[2]]))
-    # scan = transformScan(scan, np.array([pose[0], 0., 0.]))
-    # scan = transformScan(scan, np.array([0., pose[1], 0.]))
-    pose[1] = -pose[1]
-    scan[:,0] += pose[0]
-    scan[:,1] += pose[1]
+def integrateScan(map, scan_bd, pose):
+    # >>>> transform the body frame scan to the vehicle frame
+    scan_vh = tfm.body2Vehicle(scan_bd, pose[2])
+    # >>>> transform the vehicle frame scan to the global frame
+    scan_gl = tfm.vehicle2Global(scan_vh, pose)
 
-    pose_cell = map._poseToMapIndex(pose[:2])
-    for beam in scan:
-        # convert global coordinates of beampoint to gridmap coordinates
-        point_cell = map._poseToMapIndex(np.array([beam.item(0), beam.item(1)]))
+    # >>>> transform the global frame scan to map indices
+    scan_id = tfm.global2Map(scan_gl, map.offset, map.dimension, map.resolution)
+    pose_id = tfm.global2Map(pose[:2,np.newaxis], map.offset, map.dimension, map.resolution)
+
+    for beam_id in range(scan_id.shape[1]):
+
+        beampoint = scan_id[:,beam_id]
 
         # get cells along line between pose cells and beampoint cells
-        beam_rr, beam_cc = skd.line(pose_cell.item(0), pose_cell.item(1),
-                                    point_cell.item(0), point_cell.item(1))
+        beam_rr, beam_cc = skd.line(pose_id.item(0), pose_id.item(1),
+                                    beampoint.item(0), beampoint.item(1))
         
-        if beam.item(2) < GP.scan_low_z: 
-            # this point cooresponds to an obstacle, if z>low_z, it corresponds to a point on the ground
+        if scan_gl[2, beam_id] > GP.scan_low_z: 
+            # this point cooresponds to an obstacle
             # remove point_cell from line
             beam_rr = beam_rr[:-1] 
             beam_cc = beam_cc[:-1]
             # set point cell to occupied
-            map.gridmap[point_cell.item(0), point_cell.item(1)] = \
-                map.gridmap[point_cell.item(0), point_cell.item(1)] + GP.ell_occ
+            map.gridmap[beampoint.item(0), beampoint.item(1)] += GP.ell_occ
 
+        # mark beam line as free
         map.gridmap[beam_rr, beam_cc] = map.gridmap[beam_rr, beam_cc] + GP.ell_free
 
-    return map, pose_cell
+    return map, pose_id
 
 def gridMapFromScan(scan, radius):
     # generate a local coordinate occupancy grid map given a lidar scan
@@ -151,79 +152,10 @@ def gridMapFromScan(scan, radius):
     return ogmap
 
 class Map:
-    def __init__(self, n_cells, global_origin):
-        # origin of map with respect to global robot coordinate frame
-        self.global_origin  = global_origin # integer
+    def __init__(self, offset, dimension, resolution):
 
-        self.gridmap      = np.zeros((n_cells, n_cells))
-
-        self.center_cell = np.array([int(n_cells/2), int(n_cells/2)])
-
-    def getSubmap(self, centerpoint, radius):
-        # given a centerpoint (in the robot's global coordinates)
-        # and a square radius (in meters)
-        # return the portion of the map containing those cells
-
-        # convert centerpoint to index 
-        top_right = self._poseToMapIndex(centerpoint + radius)
-        bot_left  = self._poseToMapIndex(centerpoint - radius)
-
-        # get submap
-        submap = self.gridmap[bot_left.item(0):top_right.item(0), bot_left.item(1):top_right.item(1)]
-        submap = np.copy(submap)
-
-        n_cells = submap.shape[0]
-
-        submap_map = Map(n_cells, centerpoint)
-        submap_map.gridmap = submap
+        self.offset     = offset
+        self.dimension  = dimension
+        self.gridmap    = np.zeros((dimension, dimension))
+        self.resolution = resolution
         
-        return submap_map
-        
-
-    def _mapIndexToPose(self, coord_yx):
-        # center of map is pose (0,0)
-        # transform map coordinates to pose
-        # returns (x, y) pose of center of cell
-        # x in pose = 2nd map axis
-        # y in pose = 1st map axis
-
-        if not (coord_yx.size == 2):
-            print("Error: coord_yx is wrong dimension")
-            import pdb; pdb.set_trace()
-
-        if np.any(coord_yx < 0):
-            print("Error: coordinates are negative")
-            import pdb; pdb.set_trace()
-
-        coord_yx -= self.center_cell
-        coord = coord_yx[::-1] # flip x and y to coorespond to correct global coordinates
-        
-        coord = coord - self.global_origin
-        pose_xy = coord*GP.resolution_m
-        pose_xy = pose_xy.astype(np.double)
-
-        return pose_xy
-    
-    def _poseToMapIndex(self, pose_xy):
-        # center of map is pose (0,0)
-        # transform pose to map coordinates
-        # x in pose = 2nd map axis
-        # y in pose = 1st map axis
-
-        if not (pose_xy.size == 2):
-            print("Error: pose_xy is wrong dimension")
-            import pdb; pdb.set_trace()
-
-        
-        coord = (pose_xy/GP.resolution_m)
-        coord = coord.astype(np.int)
-
-        coord = coord[::-1] # flip x and y to coorespond to correct matrix coordinates
-        coord += self.center_cell
-       
-        if np.any(coord < 0):
-            print("Error: coordinates are negative")
-            import pdb; pdb.set_trace()
-
-        return coord
-
