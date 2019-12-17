@@ -51,8 +51,8 @@ LOC_center_roundabout_north = [20, 0, 0]
 LOC_center_roundabout_south = [-20, 0, 0]
 
 
-ROUTE_neighborhood_highway = [LOC_highway_neighborhood_edge, LOC_neighborhood_culdesac, LOC_highway_neighborhood_edge, LOC_neighborhood_culdesac]
-ROUTE_neighborhood_town_center = [LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center]
+ROUTE_neighborhood_highway = [LOC_highway_neighborhood_edge, LOC_neighborhood_culdesac, LOC_highway_neighborhood_edge]
+ROUTE_neighborhood_town_center = [LOC_town_center, LOC_neighborhood_culdesac, LOC_town_center]
 
 ROUTE_short = [LOC_center_roundabout_north, LOC_center_roundabout_south, LOC_center_roundabout_north]
 routes = [ROUTE_short, ROUTE_neighborhood_town_center, ROUTE_neighborhood_highway]
