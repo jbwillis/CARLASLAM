@@ -24,6 +24,28 @@ def testAll(i):
     pose0 = np.concatenate([xyz0[:2], np.array([head0])])
     print(pose0)
 
+    # plot the raw scan in 3D
+    f = plt.figure()
+    ax = f.add_subplot(111, projection='3d')
+    ax.scatter(scan0.T[0, :], scan0.T[1, :], scan0.T[2, :])
+    ax.set_xlabel('x_L')
+    ax.set_ylabel('y_L')
+    f.suptitle('3D Plot of Raw Lidar-Frame Scan')
+    pw.addPlot('3D Scan Raw F_L', f)
+
+    # plot the raw scan in 2D
+    f, ax = plt.subplots()
+    # plot last -> first to get the highest data on top
+    ax.scatter(scan0.T[0, :], scan0.T[1, :], c=scan0.T[2, :])
+    ax.set_xlabel('x_L')
+    ax.set_ylabel('y_L')
+    ax.set_xlim([-60, 60])
+    ax.set_ylim([-60, 60])
+    ax.axis('equal')
+    f.suptitle('2D Plot of Raw Lidar-Frame Scan')
+    pw.addPlot('2D Scan Raw F_L', f)
+
+
     # >>>> transform the scan to the body frame
     scan_bd = tfm.lidar2Body(scan0.T)
 
@@ -44,6 +66,7 @@ def testAll(i):
     ax.set_ylabel('y_B')
     ax.set_xlim([-60, 60])
     ax.set_ylim([-60, 60])
+    ax.axis('equal')
     f.suptitle('2D Plot of Body-Frame Scan')
     pw.addPlot('2D Scan F_B', f)
 
@@ -54,18 +77,19 @@ def testAll(i):
     f = plt.figure()
     ax = f.add_subplot(111, projection='3d')
     ax.scatter(scan_th[:,0], scan_th[:,1], scan_th[:,2])
-    ax.set_xlabel('x_L')
-    ax.set_ylabel('y_L')
+    ax.set_xlabel('x_B')
+    ax.set_ylabel('y_B')
     f.suptitle('3D Plot of Thresholded Scan')
     pw.addPlot('3D Scan F_L', f)
 
     # plot the thresholded scan in 2D
     f, ax = plt.subplots()
     ax.scatter(scan_th[:,0], scan_th[:,1], c=scan_th[:,2])
-    ax.set_xlabel('x_L')
-    ax.set_ylabel('y_L')
+    ax.set_xlabel('x_B')
+    ax.set_ylabel('y_B')
     ax.set_xlim([-60, 60])
     ax.set_ylim([-60, 60])
+    ax.axis('equal')
     f.suptitle('2D Plot of Thresholded Scan')
     pw.addPlot('2D Scan F_L', f)
 
@@ -90,6 +114,7 @@ def testAll(i):
     ax.set_ylabel('y_V')
     ax.set_xlim([-60, 60])
     ax.set_ylim([-60, 60])
+    ax.axis('equal')
     f.suptitle('2D Plot of Vehicle-Frame Scan')
     pw.addPlot('2D Scan F_V', f)
 
@@ -113,6 +138,7 @@ def testAll(i):
     ax.set_ylabel('y_G')
     ax.set_xlim([-60, 60])
     ax.set_ylim([-60, 60])
+    ax.axis('equal')
     f.suptitle('2D Plot of Global-Frame Scan')
     pw.addPlot('2D Scan F_G', f)
 
